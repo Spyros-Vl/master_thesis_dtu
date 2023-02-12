@@ -31,5 +31,5 @@ nvidia-smi
 module load cuda/11.7
 
 ~/miniconda3/envs/hpc_env/bin/python \
-image_classifier.py \
+master_thesis_dtu\src\models\image_classifier.py \
 --trainer.accelerator 'gpu' --trainer.devices 1  --trainer.max_epochs 5
