@@ -10,6 +10,9 @@ enviroment:
 check_hpc:
 	qstat
 
+git_hard_reset:
+	git reset --hard origin/master
+
 ## Install Python Dependencies
 requirements: 
 	$(PYTHON_INTERPRETER) -m pip install -U pip setuptools wheel
