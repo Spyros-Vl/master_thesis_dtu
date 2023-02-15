@@ -10,18 +10,29 @@ enviroment:
 check_hpc:
 	qstat
 
+my_jobs:
+	bstat
+
 git_hard_reset:
 	git reset --hard origin/master
 
 ## Install Python Dependencies
 requirements: 
-	$(PYTHON_INTERPRETER) -m pip install -U pip setuptools wheel
-	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt
+	pip install -U pip setuptools wheel
+	pip install -r requirements.txt
 
 ## connect to wandb
 wandb_connect:
 	wandb login
+## 5040f034163d656f6ef8acfcbf76f762e688e64f
 
 ##update req file
 update_req:
 	pipreqs . --force
+
+#git pull
+#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
+
+#run job file
+run:
+	bsub < jobscript.sh
