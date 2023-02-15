@@ -17,3 +17,11 @@ git_hard_reset:
 requirements: 
 	$(PYTHON_INTERPRETER) -m pip install -U pip setuptools wheel
 	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt
+
+## connect to wandb
+wandb_connect:
+	wandb login
+
+##update req file
+update_req:
+	pipreqs . --force

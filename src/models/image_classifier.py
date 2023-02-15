@@ -3,11 +3,19 @@
 import torch
 from torch.nn import functional as F
 from torch.utils.data import DataLoader, random_split
+import wandb
+from pytorch_lightning.loggers import WandbLogger
+import warnings
+from pytorch_lightning.utilities.warnings import PossibleUserWarning
+
+
 
 from pytorch_lightning import LightningDataModule, LightningModule
 from pytorch_lightning.cli import LightningCLI
 from pytorch_lightning.demos.mnist_datamodule import MNIST
 from torchvision import transforms
+
+warnings.filterwarnings("ignore", category=PossibleUserWarning)
 
 
 class LitClassifier(LightningModule):
@@ -68,7 +76,22 @@ class MyDataModule(LightningDataModule):
 
 
 def cli_main():
-    cli = LightningCLI(LitClassifier, MyDataModule, seed_everything_default=1234, save_config_overwrite=True, run=False)
+
+    wandb.init(
+        # set the wandb project where this run will be logged
+        project="Master-Thesis",
+        
+        # track hyperparameters and run metadata
+        config={
+        "learning_rate": 0.02,
+        "architecture": "LightningCLI",
+        "dataset": "MNIST",
+        "epochs": 10,
+        }
+    )
+    #wandb_logger = WandbLogger(project='Master-Thesis', job_type='train')
+
+    cli = LightningCLI(LitClassifier, MyDataModule, seed_everything_default=1234, save_config_kwargs={'overwrite': ...}, run=False)
     cli.trainer.fit(cli.model, datamodule=cli.datamodule)
     cli.trainer.test(ckpt_path="best", datamodule=cli.datamodule)
 

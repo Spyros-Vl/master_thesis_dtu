@@ -91,3 +91,9 @@ target/
 #My files
 
 literature/Other
+
+#wandb
+wandb
+Datasets
+config.yaml
+lightning_logs
