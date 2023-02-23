@@ -97,3 +97,6 @@ wandb
 Datasets
 config.yaml
 lightning_logs
+
+#models
+*.pt
