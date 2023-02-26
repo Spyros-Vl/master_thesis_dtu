@@ -16,7 +16,8 @@ class XRayDataSet(torch.utils.data.Dataset):
      def __init__(self, root):
         
         self.root = root
-        self.instances = list(sorted(os.listdir(os.path.join(root, "pickle_data"))))#os.listdir(os.path.join(root_dir,'wrist','pickle_data'))
+        self.instances = list(sorted(os.listdir(os.path.join(root, "pickle_data"))))
+        
 
     
      def __len__(self):
