@@ -3,7 +3,7 @@
 ### –- specify queue --
 #BSUB -q gpuv100
 ### -- set the job Name --
-#BSUB -J testjob
+#BSUB -J FirstModel
 ### -- ask for number of cores (default: 1) --
 #BSUB -n 1
 ### -- Select the resources: 1 gpu in exclusive process mode --
@@ -31,5 +31,4 @@ nvidia-smi
 module load cuda/11.7
 
 ~/miniconda3/envs/hpc_env/bin/python \
-src/models/image_classifier.py \
---trainer.accelerator 'gpu' --trainer.devices 1  --trainer.max_epochs 5
+src/models/train_model.py
