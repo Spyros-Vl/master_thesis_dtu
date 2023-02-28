@@ -78,18 +78,12 @@ def main():
             ####-----------MOVE annotations to device---------------#####
 
             # Iterate over the list of dicts and move each tensor to the device
-            for d in annotations:
-                for k, v in d.items():
-                    if isinstance(v, torch.Tensor):
-                        # If the value is a tensor, move it to the device
-                        d[k] = v.to(device)
-                    elif isinstance(v, (list, tuple)):
-                        # If the value is a list or tuple, iterate over it and move each tensor to the device
-                        d[k] = [t.to(device) if isinstance(t, torch.Tensor) else t for t in v]
-                    else:
-                        # If the value is not a tensor or container of tensors, leave it as is
-                        d[k] = torch.from_numpy(v.astype('float32')).to(device)
-            
+            # Iterate over the list of dicts and move each tensor to the device
+            for annotation in annotations:
+                for key, value in annotation.items():
+                    if isinstance(value, torch.Tensor):
+                        annotation[key] = value.to(device)
+                
             ####-----------MOVE annotations to device---------------#####
 
             loss_dict = model(imgs, annotations) 
