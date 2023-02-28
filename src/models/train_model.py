@@ -35,8 +35,8 @@ def main():
 
     #defines
     NumOfClasses = 3 
-    NumOfEpochs = 200
-    BatchSize = 16
+    NumOfEpochs = 1
+    BatchSize = 2
 
     #load train data
     train_dataset = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/train_pickles'))
@@ -78,7 +78,6 @@ def main():
             ####-----------MOVE annotations to device---------------#####
 
             # Iterate over the list of dicts and move each tensor to the device
-            # Iterate over the list of dicts and move each tensor to the device
             for annotation in annotations:
                 for key, value in annotation.items():
                     if isinstance(value, torch.Tensor):
@@ -94,7 +93,30 @@ def main():
             optimizer.step()
             lr_scheduler.step() 
             epoch_loss += losses
-        print(f'epoch : {epoch+1}, Loss : {epoch_loss}, time : {time.time() - start}')
+
+        # Validate the model
+        model.eval()
+        validation_loss = 0.0
+
+        for imgs, annotations in tqdm(validation_dataloader):
+            #imgs, annotations = imgs.to(device), annotations.to(device)
+            i += 1
+            imgs =list(img.squeeze(dim=0).to(device) for img in imgs)
+            annotations = [{k: v for k, v in t[0].items()} for t in annotations]
+
+            ####-----------MOVE annotations to device---------------#####
+
+            # Iterate over the list of dicts and move each tensor to the device
+            for annotation in annotations:
+                for key, value in annotation.items():
+                    if isinstance(value, torch.Tensor):
+                        annotation[key] = value.to(device)
+
+                with torch.no_grad():
+                    loss_dict = model(imgs, annotations)
+                    losses = sum(loss for loss in loss_dict.values())
+                    validation_loss += losses.item()
+        print(f'Epoch {epoch+1}: train_loss={epoch_loss}, val_loss={validation_loss}, time : {time.time() - start}')
 
     print('----------------------train ended--------------------------')
 

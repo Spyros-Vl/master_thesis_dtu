@@ -43,14 +43,14 @@ def main():
     iou_threshold = 0.5
 
     #load test data
-    test_dataset = XRayDataSet(pathlib.Path('../literature/Other/supervisely/wrist/test_pickles'))
+    test_dataset = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/test_pickles'))
     test_dataloader = DataLoader(test_dataset, batch_size=BatchSize, shuffle=False, num_workers=4,collate_fn=collate_fn)
 
 
 
     #load the model state
     model = get_model_instance_segmentation(3)
-    model.load_state_dict(torch.load(f'test.pt'))
+    model.load_state_dict(torch.load(f'test.pt',map_location=torch.device('cpu')))
 
 
     print('----------------------Model evaluation started--------------------------')
