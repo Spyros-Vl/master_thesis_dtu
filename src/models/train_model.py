@@ -38,9 +38,17 @@ def main():
     NumOfEpochs = 10
     BatchSize = 2
 
-    #load the dataset
-    dataset = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist'))
-    training_dataloader = DataLoader(dataset, batch_size=BatchSize, shuffle=True, num_workers=4,collate_fn=collate_fn)
+    #load train data
+    train_dataset = XRayDataSet(pathlib.Path('../literature/Other/supervisely/wrist/train_pickles'))
+    training_dataloader = DataLoader(train_dataset, batch_size=BatchSize, shuffle=True, num_workers=4,collate_fn=collate_fn)
+
+    #load validation data
+    validation_dataset = XRayDataSet(pathlib.Path('../literature/Other/supervisely/wrist/validation_pickles'))
+    validation_dataloader = DataLoader(validation_dataset, batch_size=BatchSize, shuffle=False, num_workers=4,collate_fn=collate_fn)
+
+    #load test data
+    test_dataset = XRayDataSet(pathlib.Path('../literature/Other/supervisely/wrist/test_pickles'))
+    test_dataloader = DataLoader(test_dataset, batch_size=BatchSize, shuffle=False, num_workers=4,collate_fn=collate_fn)
 
 
 

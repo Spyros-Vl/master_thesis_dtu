@@ -16,7 +16,7 @@ class XRayDataSet(torch.utils.data.Dataset):
      def __init__(self, root):
         
         self.root = root
-        self.instances = list(sorted(os.listdir(os.path.join(root, "pickle_data"))))
+        self.instances = list(sorted(os.listdir(root)))
         
 
     
@@ -25,7 +25,7 @@ class XRayDataSet(torch.utils.data.Dataset):
 
      def __getitem__(self,idx):
         
-        instance = os.path.join(self.root,'pickle_data', self.instances[idx])
+        instance = os.path.join(self.root, self.instances[idx])
         
 
         with open(instance, 'rb') as handle:

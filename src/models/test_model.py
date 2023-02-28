@@ -42,9 +42,9 @@ def main():
     score_threshold = 0.3
     iou_threshold = 0.5
 
-    #load the dataset
-    dataset = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist'))
-    test_dataloader = DataLoader(dataset, batch_size=BatchSize, shuffle=False, num_workers=num_workers,collate_fn=collate_fn)
+    #load test data
+    test_dataset = XRayDataSet(pathlib.Path('../literature/Other/supervisely/wrist/test_pickles'))
+    test_dataloader = DataLoader(test_dataset, batch_size=BatchSize, shuffle=False, num_workers=4,collate_fn=collate_fn)
 
 
 
