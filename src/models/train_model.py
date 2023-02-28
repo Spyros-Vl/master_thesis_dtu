@@ -35,8 +35,8 @@ def main():
 
     #defines
     NumOfClasses = 3 
-    NumOfEpochs = 10
-    BatchSize = 2
+    NumOfEpochs = 200
+    BatchSize = 32
 
     #load train data
     train_dataset = XRayDataSet(pathlib.Path('../literature/Other/supervisely/wrist/train_pickles'))
