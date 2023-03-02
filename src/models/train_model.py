@@ -2,6 +2,7 @@ from cv2 import cv2
 import os
 import json
 import time
+import pickle
 
 import pathlib
 from torch.utils.data import DataLoader
@@ -63,6 +64,9 @@ def main():
     # and a learning rate scheduler
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=3,gamma=0.1)
 
+    train_loss = []
+    val_loss = []
+
 
     print('----------------------train started--------------------------')
 
@@ -96,6 +100,8 @@ def main():
             optimizer.step()
             lr_scheduler.step() 
             epoch_loss += losses
+        
+        train_loss.append(epoch_loss)
 
         # Validate the model
         model#.eval()
@@ -120,9 +126,17 @@ def main():
                 print(loss_dict_val)
                 losses_val = sum(loss for loss in loss_dict_val.values())
                 validation_loss += losses_val.item()
+        
+        val_loss.append(validation_loss)
+
         print(f'Epoch {epoch+1}: train_loss={epoch_loss}, val_loss={validation_loss}, time : {time.time() - start}')
 
+
     print('----------------------train ended--------------------------')
+
+    # Save the lists to a pickle file
+    with open('losses.pickle', 'wb') as f:
+        pickle.dump((train_loss, val_loss), f)
 
     #save the model state
     torch.save(model.state_dict(),f'test.pt')

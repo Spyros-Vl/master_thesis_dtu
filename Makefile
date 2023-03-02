@@ -14,7 +14,7 @@ my_jobs:
 	bstat
 
 git_hard_reset:
-	git reset --hard origin/master
+	git reset --hard origin/main
 
 ## Install Python Dependencies
 requirements: 
