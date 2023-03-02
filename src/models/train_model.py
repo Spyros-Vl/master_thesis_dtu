@@ -41,7 +41,7 @@ def main():
     num_workers = 1
 
     #load train data
-    test = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/pickle_data'))
+    test = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/train_pickles'))
     train_dataset = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/train_pickles'))
     training_dataloader = DataLoader(test, batch_size=BatchSize, shuffle=True, num_workers=num_workers,collate_fn=collate_fn)
 
