@@ -7,8 +7,8 @@ import pathlib
 from torch.utils.data import DataLoader
 import sys
 sys.path.append('../')
-from master_thesis_dtu.src.data.my_dataset import XRayDataSet
-from master_thesis_dtu.src.data.my_dataset import collate_fn
+from src.data.my_dataset import XRayDataSet
+from src.data.my_dataset import collate_fn
 from tqdm import tqdm
 
 #for model
@@ -44,7 +44,7 @@ def main():
 
     #load test data
     test_dataset = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/test_pickles'))
-    test_dataloader = DataLoader(test_dataset, batch_size=BatchSize, shuffle=False, num_workers=4,collate_fn=collate_fn)
+    test_dataloader = DataLoader(test_dataset, batch_size=BatchSize, shuffle=False, num_workers=num_workers,collate_fn=collate_fn)
 
 
 

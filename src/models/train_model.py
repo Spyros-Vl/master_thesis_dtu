@@ -36,19 +36,21 @@ def main():
     #defines
     NumOfClasses = 3 
     NumOfEpochs = 1
-    BatchSize = 2
+    BatchSize = 1
+    num_workers = 1
 
     #load train data
+    test = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/pickle_data'))
     train_dataset = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/train_pickles'))
-    training_dataloader = DataLoader(train_dataset, batch_size=BatchSize, shuffle=True, num_workers=1,collate_fn=collate_fn)
+    training_dataloader = DataLoader(test, batch_size=BatchSize, shuffle=True, num_workers=num_workers,collate_fn=collate_fn)
 
     #load validation data
     validation_dataset = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/validation_pickles'))
-    validation_dataloader = DataLoader(validation_dataset, batch_size=BatchSize, shuffle=False, num_workers=1,collate_fn=collate_fn)
+    validation_dataloader = DataLoader(test, batch_size=BatchSize, shuffle=False, num_workers=num_workers,collate_fn=collate_fn)
 
     #load test data
     test_dataset = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/test_pickles'))
-    test_dataloader = DataLoader(test_dataset, batch_size=BatchSize, shuffle=False, num_workers=1,collate_fn=collate_fn)
+    test_dataloader = DataLoader(test, batch_size=BatchSize, shuffle=False, num_workers=num_workers,collate_fn=collate_fn)
 
 
 
@@ -86,6 +88,7 @@ def main():
             ####-----------MOVE annotations to device---------------#####
 
             loss_dict = model(imgs, annotations) 
+            print(loss_dict)
             losses = sum(loss for loss in loss_dict.values())        
 
             optimizer.zero_grad()
@@ -95,7 +98,7 @@ def main():
             epoch_loss += losses
 
         # Validate the model
-        model.eval()
+        model#.eval()
         validation_loss = 0.0
 
         for imgs, annotations in tqdm(validation_dataloader):
@@ -112,10 +115,11 @@ def main():
                     if isinstance(value, torch.Tensor):
                         annotation[key] = value.to(device)
 
-                with torch.no_grad():
-                    loss_dict = model(imgs, annotations)
-                    losses = sum(loss for loss in loss_dict.values())
-                    validation_loss += losses.item()
+            with torch.no_grad():
+                loss_dict_val = model(imgs, annotations)
+                print(loss_dict_val)
+                losses_val = sum(loss for loss in loss_dict_val.values())
+                validation_loss += losses_val.item()
         print(f'Epoch {epoch+1}: train_loss={epoch_loss}, val_loss={validation_loss}, time : {time.time() - start}')
 
     print('----------------------train ended--------------------------')
