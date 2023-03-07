@@ -49,14 +49,14 @@ def main():
     #defines
     NumOfClasses = 2 
     NumOfEpochs = 1
-    BatchSize = 1
+    BatchSize = 2
     num_workers = 1
     checkpoint = "facebook/detr-resnet-50"
 
     processor = DetrImageProcessor.from_pretrained(checkpoint)
 
-    train_dataset = CocoDetection(path_folder="data", processor=processor,train=True)
-    train_dataloader = DataLoader(train_dataset, collate_fn=collate_fn_COCO, batch_size=BatchSize, shuffle=True,num_workers=num_workers)
+    train_dataset = CocoDetection(path_folder="data", processor=processor,train=False)
+    train_dataloader = DataLoader(train_dataset, collate_fn=collate_fn_COCO, batch_size=BatchSize, shuffle=False,num_workers=num_workers)
 
 
 
@@ -86,6 +86,7 @@ def main():
             pixel_values = batch["pixel_values"].to(device)
             pixel_mask = batch["pixel_mask"].to(device)
             labels = [{k: v.to(device) for k, v in t.items()} for t in batch["labels"]]
+            print(labels)
 
             outputs = model(pixel_values=pixel_values, pixel_mask=pixel_mask, labels=labels)
 
@@ -96,6 +97,8 @@ def main():
             optimizer.step()
             lr_scheduler.step() 
             epoch_loss += loss
+
+            if idx == 20 : break
         
         train_loss.append(epoch_loss)
 
