@@ -55,7 +55,7 @@ def main():
 
     processor = DetrImageProcessor.from_pretrained(checkpoint)
 
-    train_dataset = CocoDetection(path_folder="data", processor=processor)
+    train_dataset = CocoDetection(path_folder="data", processor=processor,train=True)
     train_dataloader = DataLoader(train_dataset, collate_fn=collate_fn_COCO, batch_size=BatchSize, shuffle=True,num_workers=num_workers)
 
 
@@ -110,8 +110,9 @@ def main():
     with open('losses.pickle', 'wb') as f:
         pickle.dump((train_loss, val_loss), f)
 
+    model.to("cpu")
     #save the model state
-    torch.save(model.state_dict(),f'test.pt')
+    torch.save(model.state_dict(),f'DETR_test_model.pt')
 
 
 

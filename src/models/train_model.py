@@ -136,6 +136,7 @@ def main():
     with open('losses.pickle', 'wb') as f:
         pickle.dump((train_loss, val_loss), f)
 
+    model.to("cpu")
     #save the model state
     torch.save(model.state_dict(),f'test.pt')
 
