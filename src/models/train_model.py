@@ -36,12 +36,12 @@ def main():
 
     #defines
     NumOfClasses = 3 
-    NumOfEpochs = 1
+    NumOfEpochs = 10
     BatchSize = 1
     num_workers = 1
 
     #load train data
-    train_dataset = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/train_pickles'))
+    train_dataset = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/pickle_data'))
     training_dataloader = DataLoader(train_dataset, batch_size=BatchSize, shuffle=True, num_workers=num_workers,collate_fn=collate_fn)
 
     #load validation data
