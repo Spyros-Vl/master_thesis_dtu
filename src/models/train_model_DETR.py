@@ -55,8 +55,8 @@ def main():
 
     processor = DetrImageProcessor.from_pretrained(checkpoint)
 
-    train_dataset = CocoDetection(path_folder="data", processor=processor,train=False)
-    train_dataloader = DataLoader(train_dataset, collate_fn=collate_fn_COCO, batch_size=BatchSize, shuffle=False,num_workers=num_workers)
+    train_dataset = CocoDetection(path_folder="data", processor=processor,train=True)
+    train_dataloader = DataLoader(train_dataset, collate_fn=collate_fn_COCO, batch_size=BatchSize, shuffle=True,num_workers=num_workers)
 
 
 
@@ -65,7 +65,7 @@ def main():
     model.to(device)
 
     params = [p for p in model.parameters() if p.requires_grad]
-    optimizer = torch.optim.SGD(params, lr=0.005,momentum=0.9, weight_decay=0.0005)
+    optimizer = torch.optim.AdamW(params, lr=1e-4, weight_decay=1e-4)
     # and a learning rate scheduler
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=3,gamma=0.1)
 
@@ -86,7 +86,7 @@ def main():
             pixel_values = batch["pixel_values"].to(device)
             pixel_mask = batch["pixel_mask"].to(device)
             labels = [{k: v.to(device) for k, v in t.items()} for t in batch["labels"]]
-            print(labels)
+            
 
             outputs = model(pixel_values=pixel_values, pixel_mask=pixel_mask, labels=labels)
 
@@ -98,7 +98,7 @@ def main():
             lr_scheduler.step() 
             epoch_loss += loss
 
-            if idx == 20 : break
+            
         
         train_loss.append(epoch_loss)
 

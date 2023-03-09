@@ -40,6 +40,8 @@ def main():
     BatchSize = 1
     num_workers = 1
 
+    
+
     #load train data
     train_dataset = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/pickle_data'))
     training_dataloader = DataLoader(train_dataset, batch_size=BatchSize, shuffle=True, num_workers=num_workers,collate_fn=collate_fn)
@@ -61,7 +63,7 @@ def main():
     params = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.SGD(params, lr=0.005,momentum=0.9, weight_decay=0.0005)
     # and a learning rate scheduler
-    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=3,gamma=0.1)
+    #lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=3,gamma=0.1)
 
     train_loss = []
     val_loss = []
@@ -77,18 +79,9 @@ def main():
         for imgs, annotations in tqdm(training_dataloader):
             #imgs, annotations = imgs.to(device), annotations.to(device)
             i += 1
-            imgs =list(img.squeeze(dim=0).to(device) for img in imgs)
-            annotations = [{k: v for k, v in t[0].items()} for t in annotations]
+            imgs =list(img.to(device) for img in imgs)
+            annotations = [{k: v.to(device) for k, v in t.items()} for t in annotations]
 
-            ####-----------MOVE annotations to device---------------#####
-
-            # Iterate over the list of dicts and move each tensor to the device
-            for annotation in annotations:
-                for key, value in annotation.items():
-                    if isinstance(value, torch.Tensor):
-                        annotation[key] = value.to(device)
-                
-            ####-----------MOVE annotations to device---------------#####
 
             loss_dict = model(imgs, annotations) 
             losses = sum(loss for loss in loss_dict.values())        
@@ -96,36 +89,36 @@ def main():
             optimizer.zero_grad()
             losses.backward()
             optimizer.step()
-            lr_scheduler.step() 
+            #lr_scheduler.step() 
             epoch_loss += losses
         
         train_loss.append(epoch_loss)
 
         # Validate the model
-        model#.eval()
+        #model#.eval()
         validation_loss = 0.0
 
-        for imgs, annotations in tqdm(validation_dataloader):
+        #for imgs, annotations in tqdm(validation_dataloader):
             #imgs, annotations = imgs.to(device), annotations.to(device)
-            i += 1
-            imgs =list(img.squeeze(dim=0).to(device) for img in imgs)
-            annotations = [{k: v for k, v in t[0].items()} for t in annotations]
+        #    i += 1
+        #    imgs =list(img.squeeze(dim=0).to(device) for img in imgs)
+        #    annotations = [{k: v for k, v in t[0].items()} for t in annotations]
 
             ####-----------MOVE annotations to device---------------#####
 
             # Iterate over the list of dicts and move each tensor to the device
-            for annotation in annotations:
-                for key, value in annotation.items():
-                    if isinstance(value, torch.Tensor):
-                        annotation[key] = value.to(device)
+        #    for annotation in annotations:
+        #        for key, value in annotation.items():
+        #            if isinstance(value, torch.Tensor):
+        #                annotation[key] = value.to(device)
 
-            with torch.no_grad():
-                loss_dict_val = model(imgs, annotations)
+        #    with torch.no_grad():
+        #        loss_dict_val = model(imgs, annotations)
                 
-                losses_val = sum(loss for loss in loss_dict_val.values())
-                validation_loss += losses_val.item()
+        #        losses_val = sum(loss for loss in loss_dict_val.values())
+        #        validation_loss += losses_val.item()
         
-        val_loss.append(validation_loss)
+        #val_loss.append(validation_loss)
 
         print(f'Epoch {epoch+1}: train_loss={epoch_loss}, val_loss={validation_loss}, time : {time.time() - start}')
 

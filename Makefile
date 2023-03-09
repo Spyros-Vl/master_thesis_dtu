@@ -36,3 +36,6 @@ update_req:
 #run job file
 run:
 	bsub < jobscript.sh
+
+kill:
+	bkill $(ID)
