@@ -67,7 +67,7 @@ def main():
     params = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.AdamW(params, lr=1e-4, weight_decay=1e-4)
     # and a learning rate scheduler
-    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=3,gamma=0.1)
+    #lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=3,gamma=0.1)
 
     train_loss = []
     val_loss = []
@@ -95,7 +95,7 @@ def main():
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            lr_scheduler.step() 
+            #lr_scheduler.step() 
             epoch_loss += loss
 
             
