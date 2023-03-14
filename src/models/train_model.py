@@ -36,12 +36,12 @@ def main():
 
     #defines
     NumOfClasses = 3 
-    NumOfEpochs = 200
-    BatchSize = 16
+    NumOfEpochs = 1
+    BatchSize = 2
     num_workers = 0
 
     
-
+    
     #load train data
     train_dataset = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/train_pickles'))
     training_dataloader = DataLoader(train_dataset, batch_size=BatchSize, shuffle=True, num_workers=num_workers,collate_fn=collate_fn)
@@ -71,8 +71,8 @@ def main():
         i = 0    
         epoch_loss = 0
         for imgs, annotations in tqdm(training_dataloader):
-            #imgs, annotations = imgs.to(device), annotations.to(device)
             i += 1
+            print(imgs)
             imgs =list(img.to(device) for img in imgs)
             annotations = [{k: v.to(device) for k, v in t.items()} for t in annotations]
 
