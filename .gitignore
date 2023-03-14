@@ -98,5 +98,8 @@ Datasets
 config.yaml
 lightning_logs
 
+*.err
+*.out
+*.pickle
 #models
 *.pt

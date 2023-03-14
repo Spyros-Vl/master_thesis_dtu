@@ -36,25 +36,19 @@ def main():
 
     #defines
     NumOfClasses = 3 
-    NumOfEpochs = 10
-    BatchSize = 1
+    NumOfEpochs = 200
+    BatchSize = 16
     num_workers = 1
 
     
 
     #load train data
-    train_dataset = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/pickle_data'))
+    train_dataset = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/train_pickles'))
     training_dataloader = DataLoader(train_dataset, batch_size=BatchSize, shuffle=True, num_workers=num_workers,collate_fn=collate_fn)
 
     #load validation data
     validation_dataset = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/validation_pickles'))
     validation_dataloader = DataLoader(validation_dataset, batch_size=BatchSize, shuffle=False, num_workers=num_workers,collate_fn=collate_fn)
-
-    #load test data
-    test_dataset = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/test_pickles'))
-    test_dataloader = DataLoader(test_dataset, batch_size=BatchSize, shuffle=False, num_workers=num_workers,collate_fn=collate_fn)
-
-
 
     #load the model
     model = get_model_instance_segmentation(NumOfClasses)
@@ -98,27 +92,21 @@ def main():
         #model#.eval()
         validation_loss = 0.0
 
-        #for imgs, annotations in tqdm(validation_dataloader):
+        for imgs, annotations in tqdm(validation_dataloader):
             #imgs, annotations = imgs.to(device), annotations.to(device)
-        #    i += 1
-        #    imgs =list(img.squeeze(dim=0).to(device) for img in imgs)
-        #    annotations = [{k: v for k, v in t[0].items()} for t in annotations]
+            i += 1
+            imgs =list(img.to(device) for img in imgs)
+            annotations = [{k: v.to(device) for k, v in t.items()} for t in annotations]
 
-            ####-----------MOVE annotations to device---------------#####
+      
 
-            # Iterate over the list of dicts and move each tensor to the device
-        #    for annotation in annotations:
-        #        for key, value in annotation.items():
-        #            if isinstance(value, torch.Tensor):
-        #                annotation[key] = value.to(device)
-
-        #    with torch.no_grad():
-        #        loss_dict_val = model(imgs, annotations)
+            with torch.no_grad():
+                loss_dict_val = model(imgs, annotations)
                 
-        #        losses_val = sum(loss for loss in loss_dict_val.values())
-        #        validation_loss += losses_val.item()
+                losses_val = sum(loss for loss in loss_dict_val.values())
+                validation_loss += losses_val.item()
         
-        #val_loss.append(validation_loss)
+        val_loss.append(validation_loss)
 
         print(f'Epoch {epoch+1}: train_loss={epoch_loss}, val_loss={validation_loss}, time : {time.time() - start}')
 
