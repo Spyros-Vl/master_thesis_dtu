@@ -72,7 +72,7 @@ def main():
         epoch_loss = 0
         for imgs, annotations in tqdm(training_dataloader):
             i += 1
-            print(imgs)
+            
             imgs =list(img.to(device) for img in imgs)
             annotations = [{k: v.to(device) for k, v in t.items()} for t in annotations]
 

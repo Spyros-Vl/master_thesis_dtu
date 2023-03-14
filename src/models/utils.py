@@ -13,8 +13,8 @@ import pathlib
 from torch.utils.data import DataLoader
 import sys
 sys.path.append('../')
-from master_thesis_dtu.src.data.my_dataset import XRayDataSet
-from master_thesis_dtu.src.data.my_dataset import collate_fn
+from master_thesis_dtu.src.data.my_rpg_dataset import XRayDataSet
+from master_thesis_dtu.src.data.my_rpg_dataset import collate_fn
 from tqdm import tqdm
 
 #for model
