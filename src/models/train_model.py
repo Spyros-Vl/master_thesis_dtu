@@ -8,8 +8,8 @@ import pathlib
 from torch.utils.data import DataLoader
 import sys
 sys.path.append('../')
-from master_thesis_dtu.src.data.my_dataset import XRayDataSet
-from master_thesis_dtu.src.data.my_dataset import collate_fn
+from master_thesis_dtu.src.data.my_rpg_dataset import XRayDataSet
+from master_thesis_dtu.src.data.my_rpg_dataset import collate_fn
 from tqdm import tqdm
 
 #for model
@@ -38,7 +38,7 @@ def main():
     NumOfClasses = 3 
     NumOfEpochs = 200
     BatchSize = 16
-    num_workers = 1
+    num_workers = 0
 
     
 
@@ -113,9 +113,12 @@ def main():
 
     print('----------------------train ended--------------------------')
 
+    # Create a dictionary containing the lists
+    data = {'val_loss': val_loss, 'epoch_loss': epoch_loss}
+
     # Save the lists to a pickle file
-    with open('losses.pickle', 'wb') as f:
-        pickle.dump((train_loss, val_loss), f)
+    with open('losses_CNN.pickle', 'wb') as f:
+        pickle.dump(data, f)
 
     model.to("cpu")
     #save the model state

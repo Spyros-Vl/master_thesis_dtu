@@ -107,11 +107,14 @@ def main():
 
     print('----------------------train ended--------------------------')
 
-    
+    val_loss = 0
+
+    # Create a dictionary containing the lists
+    data = {'val_loss': val_loss, 'epoch_loss': epoch_loss}
 
     # Save the lists to a pickle file
-    with open('losses.pickle', 'wb') as f:
-        pickle.dump((train_loss, val_loss), f)
+    with open('losses_DETR.pickle', 'wb') as f:
+        pickle.dump(data, f)
 
     model.to("cpu")
     #save the model state

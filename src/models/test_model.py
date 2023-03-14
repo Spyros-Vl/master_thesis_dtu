@@ -7,8 +7,8 @@ import pathlib
 from torch.utils.data import DataLoader
 import sys
 sys.path.append('../')
-from src.data.my_dataset import XRayDataSet
-from src.data.my_dataset import collate_fn
+from master_thesis_dtu.src.data.my_dataset import XRayDataSet
+from master_thesis_dtu.src.data.my_dataset import collate_fn
 from tqdm import tqdm
 
 #for model
@@ -63,8 +63,8 @@ def main():
     with torch.no_grad():
         for images, targets in tqdm(test_dataloader):
 
-            images =list(img.squeeze(dim=0) for img in images)
-            targets = [{k: v for k, v in t[0].items()} for t in targets]
+            images =list(img.to(device) for img in images)
+            targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
             
             outputs = model(images)
 
@@ -78,6 +78,9 @@ def main():
                 for box, score, label in zip(boxes, scores, labels):
                     if label in target_labels:
                         index = np.where(target_labels == label)[0][0]
+                        print(torch.is_tensor(target_boxes[index]))
+                        print(torch.is_tensor(box))
+
                         if score > score_threshold and box_iou(box, target_boxes[index]) > iou_threshold:
                             correct += 1
 
