@@ -109,6 +109,15 @@ def main():
         val_loss.append(validation_loss)
 
         print(f'Epoch {epoch+1}: train_loss={epoch_loss}, val_loss={validation_loss}, time : {time.time() - start}')
+        # Save the lists to a pickle file
+        with open('losses_CNN.pickle', 'wb') as f:
+            pickle.dump(data, f)
+
+        model.to("cpu")
+        #save the model state
+        torch.save(model.state_dict(),f'test.pt')
+
+        print("Model state saved on epoch: ", (epoch+1))
 
 
     print('----------------------train ended--------------------------')

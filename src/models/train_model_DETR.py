@@ -103,6 +103,14 @@ def main():
         train_loss.append(epoch_loss)
 
         print(f'Epoch {epoch+1}: train_loss={epoch_loss}, time : {time.time() - start}')
+        with open('losses_CNN.pickle', 'wb') as f:
+            pickle.dump(data, f)
+
+        model.to("cpu")
+        #save the model state
+        torch.save(model.state_dict(),f'test.pt')
+
+        print("Model state saved on epoch: ", (epoch+1))
 
 
     print('----------------------train ended--------------------------')

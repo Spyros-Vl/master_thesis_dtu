@@ -13,8 +13,8 @@ import pathlib
 from torch.utils.data import DataLoader
 import sys
 sys.path.append('../')
-from master_thesis_dtu.src.data.my_rpg_dataset import XRayDataSet
-from master_thesis_dtu.src.data.my_rpg_dataset import collate_fn
+from src.data.my_rpg_dataset import XRayDataSet
+from src.data.my_rpg_dataset import collate_fn
 from tqdm import tqdm
 
 #for model
@@ -79,7 +79,7 @@ def plot_image_from_output(img, annotation):
 
     plt.show()
 
-def create_COCO_from_dataset(image_list,ann_list):
+def create_COCO_from_dataset(img_list,ann_list,status):
     
     #fix info
     info = {
@@ -118,7 +118,7 @@ def create_COCO_from_dataset(image_list,ann_list):
     images = []
     annotations = []
     
-    for idx in tqdm(range(10)):#tqdm.tqdm(range(len(img_list))):
+    for idx in tqdm(range(len(img_list))):
 
         img_path = os.path.join(img_list[idx])
         ann_path = os.path.join(ann_list[idx])
@@ -128,14 +128,16 @@ def create_COCO_from_dataset(image_list,ann_list):
         image_id = idx + 1
         file_name = img_path
 
-        image = Image.open(img_path)
+        # Load the image using cv2
+        image = cv2.imread(img_path)
 
-        # Get the width and height of the image
-        width, height = image.size
+        # Get the height and width of the image
+        height, width, channels = image.shape
+
 
         img = {
                     "id": image_id,
-                    "file_name": file_name,
+                    "file_name": file_name.replace("\\","/"),
                     "width": width,
                     "height": height
                 }
@@ -193,7 +195,7 @@ def create_COCO_from_dataset(image_list,ann_list):
     }
 
     # Write COCO data to JSON file
-    with open('coco_data.json', 'w') as f:
+    with open((status + '_coco_data.json'), 'w') as f:
         json.dump(COCO_dataset, f)
 
     return COCO_dataset
