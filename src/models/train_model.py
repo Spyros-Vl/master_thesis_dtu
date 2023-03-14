@@ -36,8 +36,8 @@ def main():
 
     #defines
     NumOfClasses = 3 
-    NumOfEpochs = 1
-    BatchSize = 2
+    NumOfEpochs = 100
+    BatchSize = 16
     num_workers = 0
 
     
