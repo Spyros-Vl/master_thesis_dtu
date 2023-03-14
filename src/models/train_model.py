@@ -76,10 +76,6 @@ def main():
             imgs =list(img.to(device) for img in imgs)
             annotations = [{k: v.to(device) for k, v in t.items()} for t in annotations]
 
-            for annotation in annotations:
-                if annotation['boxes'].numel() == 0:
-                    continue
-
 
             loss_dict = model(imgs, annotations) 
             losses = sum(loss for loss in loss_dict.values())        

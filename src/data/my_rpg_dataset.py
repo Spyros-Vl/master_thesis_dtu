@@ -36,9 +36,10 @@ class XRayDataSet(torch.utils.data.Dataset):
             data = pickle.load(handle)
 
         img_path = data['image']
+        linux_path = os.path.join(*img_path.split('\\'))
         #for linux to work
         start_dir = '../'
-        img_path = os.path.relpath(img_path, start_dir)
+        img_path = os.path.relpath(linux_path, start_dir)
         #
 
         img = cv2.imread(img_path)
