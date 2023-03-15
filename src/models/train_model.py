@@ -19,6 +19,7 @@ from torchvision.models.detection import FasterRCNN
 from torchvision.models.detection.rpn import AnchorGenerator, RPNHead, RegionProposalNetwork
 import torch
 from utils import *
+import wandb
 
 
 def main():
@@ -40,6 +41,23 @@ def main():
     BatchSize = 16
     num_workers = 0
 
+    #SET Weights & Biases
+    wandb.init(
+        # set the wandb project where this run will be logged
+        project="Master-Thesis",
+        
+        # track hyperparameters and run metadata
+        config={
+        "learning_rate": 0.005,
+        "momentum": 0.9,
+        "weight_decay": 0.0005,
+        "architecture": "FastRCNN TorchVision",
+        "dataset": "Pediatric wrist trauma X-ray",
+        "epochs": NumOfEpochs,
+        "BatchSize": BatchSize,
+        "Optimizer": "SGD",
+        }
+    )
     
     
     #load train data
@@ -108,6 +126,8 @@ def main():
                 validation_loss += losses_val.item()
         
         val_loss.append(validation_loss)
+
+        wandb.log({'epoch': epoch+1,"training_loss": epoch_loss,"validation_loss": validation_loss})
 
         print(f'Epoch {epoch+1}: train_loss={epoch_loss}, val_loss={validation_loss}, time : {time.time() - start}')
         # Save the lists to a pickle file
