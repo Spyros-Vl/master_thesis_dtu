@@ -68,6 +68,7 @@ def main():
     for epoch in range(NumOfEpochs):
         start = time.time()
         model.train()
+        model.to(device)
         i = 0    
         epoch_loss = 0
         for imgs, annotations in tqdm(training_dataloader):
@@ -110,12 +111,11 @@ def main():
 
         print(f'Epoch {epoch+1}: train_loss={epoch_loss}, val_loss={validation_loss}, time : {time.time() - start}')
         # Save the lists to a pickle file
-        with open('losses_CNN.pickle', 'wb') as f:
-            pickle.dump(data, f)
+        # Create a dictionary containing the lists
 
         model.to("cpu")
         #save the model state
-        torch.save(model.state_dict(),f'test.pt')
+        torch.save(model.state_dict(),f'CNN_Model.pt')
 
         print("Model state saved on epoch: ", (epoch+1))
 

@@ -8,8 +8,8 @@ import pathlib
 from torch.utils.data import DataLoader
 import sys
 sys.path.append('../')
-from master_thesis_dtu.src.data.my_dataset import CocoDetection
-from master_thesis_dtu.src.data.my_dataset import collate_fn_COCO
+from master_thesis_dtu.src.data.my_rpg_dataset import CocoDetection
+from master_thesis_dtu.src.data.my_rpg_dataset import collate_fn_COCO
 from tqdm import tqdm
 
 #for model
@@ -103,12 +103,10 @@ def main():
         train_loss.append(epoch_loss)
 
         print(f'Epoch {epoch+1}: train_loss={epoch_loss}, time : {time.time() - start}')
-        with open('losses_CNN.pickle', 'wb') as f:
-            pickle.dump(data, f)
 
         model.to("cpu")
         #save the model state
-        torch.save(model.state_dict(),f'test.pt')
+        torch.save(model.state_dict(),f'DETR_Model.pt')
 
         print("Model state saved on epoch: ", (epoch+1))
 
@@ -126,7 +124,7 @@ def main():
 
     model.to("cpu")
     #save the model state
-    torch.save(model.state_dict(),f'DETR_test_model.pt')
+    torch.save(model.state_dict(),f'DETR_Model.pt')
 
 
 
