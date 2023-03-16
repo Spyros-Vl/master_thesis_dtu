@@ -21,6 +21,7 @@ from transformers import DetrImageProcessor
 from transformers import DetrConfig, DetrForObjectDetection
 import torch
 from utils import *
+from torch.optim.lr_scheduler import LambdaLR, CosineAnnealingWarmRestarts
 
 import warnings
 
@@ -72,8 +73,8 @@ def main():
     # set up learning rate scheduler
     warmup_steps = 1000
     total_steps = 50000
-    lr_scheduler = torch.optim.LambdaLR(optimizer, lr_lambda=lambda step: (1 - step / (total_steps + 1)))
-    lr_scheduler = torch.optim.CosineAnnealingWarmRestarts(lr_scheduler, T_0=warmup_steps, T_mult=2)
+    lr_scheduler = LambdaLR(optimizer, lr_lambda=lambda step: (1 - step / (total_steps + 1)))
+    lr_scheduler = CosineAnnealingWarmRestarts(lr_scheduler, T_0=warmup_steps, T_mult=2)
 
     train_loss = []
     val_loss = []
