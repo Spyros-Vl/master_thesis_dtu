@@ -79,7 +79,33 @@ class XRayDataSet_windows(torch.utils.data.Dataset):
 
 
          return img, target
+class XRayDataSet_coco(torch.utils.data.Dataset):
+    
 
+   def __init__(self, root):
+         
+      self.root = root
+      self.instances = list(sorted(os.listdir(root)))
+         
+
+      
+   def __len__(self):
+      return len(self.instances) 
+
+   def __getitem__(self,idx):
+         
+      instance = os.path.join(self.root, self.instances[idx])
+         
+
+      with open(instance, 'rb') as handle:
+            data = pickle.load(handle)
+
+      img_path = data['image']
+      
+      target = data['target']
+
+
+      return img_path, target
 
 def read_images(inp, tar):
    return imread(inp), torch.load(tar)

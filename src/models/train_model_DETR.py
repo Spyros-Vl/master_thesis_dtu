@@ -64,11 +64,16 @@ def main():
     model = DetrForObjectDetection.from_pretrained(checkpoint,num_labels=NumOfClasses,ignore_mismatched_sizes=True)    
     model.to(device)
 
-    params = [p for p in model.parameters() if p.requires_grad]
+    #params = [p for p in model.parameters() if p.requires_grad]
     #optimizer = torch.optim.SGD(params, lr=0.005,momentum=0.9, weight_decay=0.0005)
-    optimizer = torch.optim.AdamW(params, lr=1e-4, weight_decay=1e-4)
-    # and a learning rate scheduler
-    #lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=3,gamma=0.1)
+    #optimizer = torch.optim.AdamW(params, lr=1e-4, weight_decay=1e-4)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4, weight_decay=0.05)
+
+    # set up learning rate scheduler
+    warmup_steps = 1000
+    total_steps = 50000
+    lr_scheduler = torch.optim.LambdaLR(optimizer, lr_lambda=lambda step: (1 - step / (total_steps + 1)))
+    lr_scheduler = torch.optim.CosineAnnealingWarmRestarts(lr_scheduler, T_0=warmup_steps, T_mult=2)
 
     train_loss = []
     val_loss = []
@@ -103,10 +108,12 @@ def main():
 
             loss = outputs.loss
 
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.1)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            #lr_scheduler.step() 
+            # update learning rate
+            lr_scheduler.step() 
             epoch_loss += loss
 
             
