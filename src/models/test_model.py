@@ -36,10 +36,10 @@ def main():
 
 
     #defines
-    BatchSize = 2
-    num_workers =4
+    BatchSize = 1
+    num_workers =0
 
-    score_threshold = 0.3
+    score_threshold = 0.8
     iou_threshold = 0.5
 
     #load test data
@@ -50,7 +50,8 @@ def main():
 
     #load the model state
     model = get_model_instance_segmentation(3)
-    model.load_state_dict(torch.load(f'test.pt',map_location=torch.device('cpu')))
+    model.load_state_dict(torch.load(f'CNN_Model.pt'))
+    model.to(device)
 
 
     print('----------------------Model evaluation started--------------------------')
@@ -62,26 +63,23 @@ def main():
 
     with torch.no_grad():
         for images, targets in tqdm(test_dataloader):
-
-            images =list(img.to(device) for img in images)
-            targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-            
+        
+            images =list(img for img in images)
+            targets = [{k: v for k, v in t.items()} for t in targets]
+                
             outputs = model(images)
 
             for i, output in enumerate(outputs):
-                boxes = output['boxes'].detach().cpu().numpy()
-                scores = output['scores'].detach().cpu().numpy()
-                labels = output['labels'].detach().cpu().numpy()
-                target_boxes = targets[i]['boxes'].cpu().numpy()
-                target_labels = targets[i]['labels'].cpu().numpy()
+                boxes = output['boxes']
+                scores = output['scores'].numpy()
+                labels = output['labels'].numpy()
+                target_boxes = targets[i]['boxes']
+                target_labels = targets[i]['labels'].numpy()
                 total += target_labels.size
                 for box, score, label in zip(boxes, scores, labels):
                     if label in target_labels:
                         index = np.where(target_labels == label)[0][0]
-                        print(torch.is_tensor(target_boxes[index]))
-                        print(torch.is_tensor(box))
-
-                        if score > score_threshold and box_iou(box, target_boxes[index]) > iou_threshold:
+                        if score > score_threshold and box_iou(box.unsqueeze(0), target_boxes[index].unsqueeze(0)) > iou_threshold:
                             correct += 1
 
     accuracy = 100 * correct / total

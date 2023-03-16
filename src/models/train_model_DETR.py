@@ -64,10 +64,9 @@ def main():
     model = DetrForObjectDetection.from_pretrained(checkpoint,num_labels=NumOfClasses,ignore_mismatched_sizes=True)    
     model.to(device)
 
-    #params = [p for p in model.parameters() if p.requires_grad]
+    params = [p for p in model.parameters() if p.requires_grad]
     #optimizer = torch.optim.SGD(params, lr=0.005,momentum=0.9, weight_decay=0.0005)
-    param_dicts = [{"params": [p for n, p in model.named_parameters() if "backbone" not in n and p.requires_grad]},{"params": [p for n, p in model.named_parameters() if "backbone" in n and p.requires_grad],"lr": lr_backbone=1e-5}]
-    optimizer = torch.optim.AdamW(param_dicts, lr=1e-4, weight_decay=1e-4)
+    optimizer = torch.optim.AdamW(params, lr=1e-4, weight_decay=1e-4)
     # and a learning rate scheduler
     #lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=3,gamma=0.1)
 
