@@ -48,9 +48,41 @@ class XRayDataSet(torch.utils.data.Dataset):
 
 
         return img, target
+     
+class XRayDataSet_windows(torch.utils.data.Dataset):
+    
 
-     def read_images(inp, tar):
-        return imread(inp), torch.load(tar)
+      def __init__(self, root):
+         
+         self.root = root
+         self.instances = list(sorted(os.listdir(root)))
+         
+
+      
+      def __len__(self):
+         return len(self.instances) 
+
+      def __getitem__(self,idx):
+         
+         instance = os.path.join(self.root, self.instances[idx])
+         
+
+         with open(instance, 'rb') as handle:
+               data = pickle.load(handle)
+
+         img_path = data['image']
+         linux_path = os.path.join(*img_path.split('\\'))
+
+         img = cv2.imread(img_path)
+         img = T.ToTensor()(img).float()
+         target = data['target']
+
+
+         return img, target
+
+
+def read_images(inp, tar):
+   return imread(inp), torch.load(tar)
 
 
 

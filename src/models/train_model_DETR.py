@@ -49,7 +49,7 @@ def main():
     #defines
     NumOfClasses = 2 
     NumOfEpochs = 10
-    BatchSize = 16
+    BatchSize = 1
     num_workers = 0
     checkpoint = "facebook/detr-resnet-50"
 
@@ -87,6 +87,15 @@ def main():
             pixel_mask = batch["pixel_mask"].to(device)
             labels = [{k: v.to(device) for k, v in t.items()} for t in batch["labels"]]
             
+            t = labels[0]['boxes']
+    
+            # Check if the tensor contains NaNs
+            has_nans = torch.isnan(t).any().item()
+
+            if has_nans:
+                print("The tensor contains NaNs.")
+                print(t)
+                continue
 
             outputs = model(pixel_values=pixel_values, pixel_mask=pixel_mask, labels=labels)
 
