@@ -7,8 +7,8 @@ import pathlib
 from torch.utils.data import DataLoader
 import sys
 sys.path.append('../')
-from master_thesis_dtu.src.data.my_dataset import XRayDataSet
-from master_thesis_dtu.src.data.my_dataset import collate_fn
+from master_thesis_dtu.src.data.my_rpg_dataset import XRayDataSet
+from master_thesis_dtu.src.data.my_rpg_dataset import collate_fn
 from tqdm import tqdm
 
 #for model
@@ -64,8 +64,8 @@ def main():
     with torch.no_grad():
         for images, targets in tqdm(test_dataloader):
         
-            images =list(img for img in images)
-            targets = [{k: v for k, v in t.items()} for t in targets]
+            images =list(img.to(device) for img in images)
+            targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
                 
             outputs = model(images)
 
