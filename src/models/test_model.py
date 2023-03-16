@@ -40,7 +40,7 @@ def main():
     num_workers =0
 
     score_threshold = 0.8
-    iou_threshold = 0.5
+    iou_threshold = 0.7
 
     #load test data
     test_dataset = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/test_pickles'))
@@ -70,11 +70,11 @@ def main():
             outputs = model(images)
 
             for i, output in enumerate(outputs):
-                boxes = output['boxes']
-                scores = output['scores'].numpy()
-                labels = output['labels'].numpy()
-                target_boxes = targets[i]['boxes']
-                target_labels = targets[i]['labels'].numpy()
+                boxes = output['boxes'].cpu()
+                scores = output['scores'].cpu().numpy()
+                labels = output['labels'].cpu().numpy()
+                target_boxes = targets[i]['boxes'].cpu()
+                target_labels = targets[i]['labels'].cpu().numpy()
                 total += target_labels.size
                 for box, score, label in zip(boxes, scores, labels):
                     if label in target_labels:

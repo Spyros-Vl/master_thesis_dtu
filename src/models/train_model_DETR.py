@@ -49,8 +49,8 @@ def main():
     #defines
     NumOfClasses = 2 
     NumOfEpochs = 10
-    BatchSize = 1
-    num_workers = 0
+    BatchSize = 16
+    num_workers = 8
     checkpoint = "facebook/detr-resnet-50"
 
     processor = DetrImageProcessor.from_pretrained(checkpoint)
@@ -79,6 +79,7 @@ def main():
     for epoch in range(NumOfEpochs):
         start = time.time()
         model.train()
+        model.to(device)
         i = 0    
         epoch_loss = 0
         for idx, batch in enumerate(tqdm(train_dataloader)):
