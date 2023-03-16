@@ -50,7 +50,7 @@ def main():
     NumOfClasses = 2 
     NumOfEpochs = 10
     BatchSize = 16
-    num_workers = 1
+    num_workers = 0
     checkpoint = "facebook/detr-resnet-50"
 
     processor = DetrImageProcessor.from_pretrained(checkpoint)
