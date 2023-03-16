@@ -64,17 +64,17 @@ def main():
     with torch.no_grad():
         for images, targets in tqdm(test_dataloader):
         
-            images =list(img.to(device) for img in images)
-            targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
+            images =list(img for img in images)
+            targets = [{k: v for k, v in t.items()} for t in targets]
                 
             outputs = model(images)
 
             for i, output in enumerate(outputs):
-                boxes = output['boxes']
-                scores = output['scores'].numpy()
-                labels = output['labels'].numpy()
-                target_boxes = targets[i]['boxes']
-                target_labels = targets[i]['labels'].numpy()
+                boxes = output['boxes'].detach().cpu()
+                scores = output['scores'].detach().cpu().numpy()
+                labels = output['labels'].detach().cpu().numpy()
+                target_boxes = targets[i]['boxes'].cpu()
+                target_labels = targets[i]['labels'].cpu().numpy()
                 total += target_labels.size
                 for box, score, label in zip(boxes, scores, labels):
                     if label in target_labels:
