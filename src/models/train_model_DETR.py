@@ -22,6 +22,7 @@ from transformers import DetrConfig, DetrForObjectDetection
 import torch
 from utils import *
 from torch.optim.lr_scheduler import LambdaLR, CosineAnnealingWarmRestarts
+import wandb
 
 import warnings
 
@@ -54,6 +55,21 @@ def main():
     num_workers = 8
     checkpoint = "facebook/detr-resnet-50"
 
+    #SET Weights & Biases
+    wandb.init(
+        # set the wandb project where this run will be logged
+        project="Master-Thesis",
+        
+        # track hyperparameters and run metadata
+        config={
+        "architecture": "DETR model from Transformers",
+        "dataset": "Pediatric wrist trauma X-ray",
+        "epochs": NumOfEpochs,
+        "BatchSize": BatchSize,
+        "Optimizer": "ADAM",
+        }
+    )
+
     processor = DetrImageProcessor.from_pretrained(checkpoint)
 
     train_dataset = CocoDetection(path_folder="data", processor=processor,train=True)
@@ -74,11 +90,13 @@ def main():
     warmup_steps = 1000
     total_steps = 50000
     lr_scheduler = LambdaLR(optimizer, lr_lambda=lambda step: (1 - step / (total_steps + 1)))
-    lr_scheduler = CosineAnnealingWarmRestarts(lr_scheduler, T_0=warmup_steps, T_mult=2)
+    lr_scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=warmup_steps, T_mult=2)
 
     train_loss = []
     val_loss = []
 
+    # watch the model and optimizer
+    wandb.watch(model, log="all")
 
     print('----------------------train started--------------------------')
 
@@ -118,7 +136,8 @@ def main():
             epoch_loss += loss
 
             
-        
+        wandb.log({'epoch': epoch+1,"training_loss": epoch_loss,'learning_rate': lr_scheduler.get_lr()})
+
         train_loss.append(epoch_loss)
 
         print(f'Epoch {epoch+1}: train_loss={epoch_loss}, time : {time.time() - start}')
@@ -129,7 +148,8 @@ def main():
 
         print("Model state saved on epoch: ", (epoch+1))
 
-
+    wandb.finish()
+    
     print('----------------------train ended--------------------------')
 
     val_loss = 0
