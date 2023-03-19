@@ -51,8 +51,8 @@ def main():
     iou_threshold = 0.5
 
     #load test data
-    test_dataset = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/test_pickles'))
-    test_dataloader = DataLoader(test_dataset, batch_size=BatchSize, shuffle=False, num_workers=num_workers,collate_fn=collate_fn)
+    test_dataset = XRayDataSet_coco(pathlib.Path('../literature/Other/supervisely/wrist/test_pickles'))
+    test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=0,collate_fn=collate_fn)
 
 
 
@@ -104,6 +104,10 @@ def main():
     coco_gt = COCO()
     coco_gt.dataset = coco_annotations
     coco_gt.createIndex()
+
+    #load test data
+    test_dataset = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/test_pickles'))
+    test_dataloader = DataLoader(test_dataset, batch_size=BatchSize, shuffle=False, num_workers=num_workers,collate_fn=collate_fn)
 
 
     print('----------------------Model evaluation started--------------------------')
