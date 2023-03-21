@@ -79,7 +79,7 @@ def main():
     id2label = {k: v['name'] for k,v in cats.items()}
 
     #load the model
-    model = DetrForObjectDetection.from_pretrained(checkpoint,num_labels=len(id2label),
+    model = DetrForObjectDetection.from_pretrained(checkpoint,num_labels=len(id2label),id2label={0:"text",1:"fracture"},
                                                              ignore_mismatched_sizes=True)    
     model.to(device)
 

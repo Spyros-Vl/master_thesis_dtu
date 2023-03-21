@@ -105,7 +105,7 @@ def create_COCO_from_dataset(img_list,ann_list,status):
 
     categories = [
         {
-            "id": 2,
+            "id": 0,
             "name": "text"
         },
         {
@@ -144,7 +144,7 @@ def create_COCO_from_dataset(img_list,ann_list,status):
         
         images.append(img)
             
-        classes = {'fracture' : 1, 'text' : 2}
+        classes = {'text' : 0, 'fracture' : 1}
 
 
         with open(ann_path) as json_file:

@@ -75,7 +75,7 @@ def main():
     train_dataset = CocoDetection(path_folder="data", processor=processor,train=True)
     train_dataloader = DataLoader(train_dataset, collate_fn=collate_fn_COCO, batch_size=BatchSize, shuffle=True,num_workers=num_workers)
 
-    config = DetrConfig.from_pretrained('facebook/detr-resnet-50',num_labels=2) 
+    config = DetrConfig.from_pretrained('facebook/detr-resnet-50',id2label={0:"text",1:"fracture"}) 
                                                              
     model = DetrForObjectDetection(config)
     model.load_state_dict(torch.load(f'DETR_model.pt'))
