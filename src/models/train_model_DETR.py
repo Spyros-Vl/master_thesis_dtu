@@ -75,10 +75,12 @@ def main():
     train_dataset = CocoDetection(path_folder="data", processor=processor,train=True)
     train_dataloader = DataLoader(train_dataset, collate_fn=collate_fn_COCO, batch_size=BatchSize, shuffle=True,num_workers=num_workers)
 
-
+    cats = train_dataset.coco.cats
+    id2label = {k: v['name'] for k,v in cats.items()}
 
     #load the model
-    model = DetrForObjectDetection.from_pretrained(checkpoint,num_labels=NumOfClasses,ignore_mismatched_sizes=True)    
+    model = DetrForObjectDetection.from_pretrained(checkpoint,num_labels=len(id2label),
+                                                             ignore_mismatched_sizes=True)    
     model.to(device)
 
     #params = [p for p in model.parameters() if p.requires_grad]

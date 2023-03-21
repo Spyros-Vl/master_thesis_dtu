@@ -102,6 +102,7 @@ class XRayDataSet_coco(torch.utils.data.Dataset):
 
       img_path = data['image']
       
+      
       target = data['target']
 
 
@@ -114,7 +115,7 @@ def read_images(inp, tar):
 
 class CocoDetection(torchvision.datasets.CocoDetection):
     def __init__(self, path_folder, processor, train=True):
-        ann_file = os.path.join(path_folder, "test_coco_data.json" if train else "test_coco_data.json")
+        ann_file = os.path.join(path_folder, "train_coco_data.json" if train else "test_coco_data.json")
         super(CocoDetection, self).__init__(path_folder, ann_file)
         self.processor = processor
 
