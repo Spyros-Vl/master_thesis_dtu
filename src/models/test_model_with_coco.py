@@ -47,14 +47,6 @@ def main():
     BatchSize = 1
     num_workers =4
 
-    score_threshold = 0.8
-    iou_threshold = 0.5
-
-    #load test data
-    test_dataset = XRayDataSet_coco(pathlib.Path('../literature/Other/supervisely/wrist/test_pickles'))
-    test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=0,collate_fn=collate_fn)
-
-
 
     #load the model state
     model = get_model_instance_segmentation(3)
@@ -68,11 +60,17 @@ def main():
         'categories': [{'id': 1, 'name': 'fracture'}, {'id': 2, 'name': 'text'}]
     }
 
+    #load test data
+    test_dataset = XRayDataSet_coco(pathlib.Path('../literature/Other/supervisely/wrist/test_pickles'))
+    test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=4,collate_fn=collate_fn)
+
+
     # Convert your annotations to COCO format
     for i, (img_path, targets) in enumerate(test_dataset):
-        img_id = i + 1
+        
         
         file_name = img_path
+        
 
         # Load the image using cv2
         image = cv2.imread(img_path)
@@ -81,8 +79,8 @@ def main():
         height, width, channels = image.shape
 
         coco_annotations['images'].append({
-            'id': img_id,
-            'file_name': file_name.replace("\\","/"),
+            'id': targets['image_id'].cpu().numpy()[0],
+            'file_name': file_name.replace("\\","/").replace('../', ''),
             'height': height,
             'width': width
         })
@@ -93,10 +91,10 @@ def main():
             area = (box[3] - box[1]) * (box[2] - box[0])
             coco_annotations['annotations'].append({
                 'id': len(coco_annotations['annotations']) + 1,
-                'image_id': img_id,
-                'category_id': targets['labels'][j],
-                'bbox': [x, y, w, h],
-                'area': area,
+                'image_id': targets['image_id'].cpu().numpy()[0],
+                'category_id': targets['labels'][j].item(),
+                'bbox': [x.item(), y.item(), w.item(), h.item()],
+                'area': area.item(),
                 'iscrowd': 0  # Assuming all instances are not crowd
             })
 
@@ -112,12 +110,17 @@ def main():
 
     print('----------------------Model evaluation started--------------------------')
 
-    device = next(model.parameters()).device
+    # Run evaluation on your model
+    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    model = get_model_instance_segmentation(3)
+    model.load_state_dict(torch.load(f'../models/CNN_Model_200epochs.pt'))
+    model.to(device)
     model.eval()
     results = []
 
+
     with torch.no_grad():
-        for images, targets in test_dataloader:
+        for images, targets in tqdm(test_dataloader):
             images = list(img.to(device) for img in images)
             targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
             outputs = model(images)
@@ -128,7 +131,7 @@ def main():
                 image_id = targets[0]['image_id'].cpu().numpy()
                 for box, score, label in zip(boxes, scores, labels):
                     results.append({
-                        'image_id': image_id,
+                        'image_id': image_id[0],
                         'category_id': label,
                         'bbox': [box[0], box[1], box[2] - box[0], box[3] - box[1]],
                         'score': score
@@ -137,7 +140,7 @@ def main():
     # Load your model's results into the COCOeval object
     coco_dt = coco_gt.loadRes(results)
 
-    coco_eval = COCOeval(coco_gt, coco_dt, 'bbox')
+    coco_eval = COCOeval(coco_gt,coco_dt, 'bbox')
 
     # Run evaluation
     coco_eval.evaluate()
