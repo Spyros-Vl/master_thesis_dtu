@@ -232,7 +232,7 @@ def prepare_for_coco_detection(predictions):
     return coco_results
 
 def train_one_epoch(model,training_dataloader,device,optimizer):
-    
+    epoch_loss = 0
     for imgs, annotations in tqdm(training_dataloader):
             
         imgs =list(img.to(device) for img in imgs)
