@@ -25,6 +25,9 @@ from torchvision.models.detection.rpn import AnchorGenerator, RPNHead, RegionPro
 from torchvision.models.detection.faster_rcnn import *
 import torch
 
+from pycocotools.coco import COCO
+from pycocotools.cocoeval import COCOeval
+
 
 
 def get_model_instance_segmentation(num_classes):
@@ -227,3 +230,60 @@ def prepare_for_coco_detection(predictions):
             ]
         )
     return coco_results
+
+def train_one_epoch(model,training_dataloader,device,optimizer):
+    
+    for imgs, annotations in tqdm(training_dataloader):
+        i += 1
+            
+        imgs =list(img.to(device) for img in imgs)
+        annotations = [{k: v.to(device) for k, v in t.items()} for t in annotations]
+
+
+        loss_dict = model(imgs, annotations) 
+        losses = sum(loss for loss in loss_dict.values())        
+
+        optimizer.zero_grad()
+        losses.backward()
+        optimizer.step()
+        epoch_loss += losses
+        
+    return epoch_loss
+
+def validation_step(model,device,validation_dataloader,coco_gt):
+
+    model.eval()
+    results = [] 
+    with torch.no_grad():
+        for images, targets in tqdm(validation_dataloader):
+            images = list(img.to(device) for img in images)
+            targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
+            outputs = model(images)
+            for i, output in enumerate(outputs):
+                boxes = output['boxes'].cpu().numpy()
+                scores = output['scores'].cpu().numpy()
+                labels = output['labels'].cpu().numpy()
+                image_id = targets[0]['image_id'].cpu().numpy()
+                for box, score, label in zip(boxes, scores, labels):
+                    results.append({
+                        'image_id': image_id[0],
+                        'category_id': label,
+                        'bbox': [box[0], box[1], box[2] - box[0], box[3] - box[1]],
+                        'score': score
+                    })
+
+    # Load your model's results into the COCOeval object
+    coco_dt = coco_gt.loadRes(results)
+
+    coco_eval = COCOeval(coco_gt,coco_dt, 'bbox')
+
+    # Run evaluation
+    coco_eval.evaluate()
+    coco_eval.accumulate()
+
+    # Get the evaluation metrics
+    metrics = coco_eval.stats
+
+    print('Evaluation metrics: AP = {:.4f}, AP50 = {:.4f}, AP75 = {:.4f}, APs = {:.4f}, APm = {:.4f}, APl = {:.4f}'.format(metrics[0], metrics[1], metrics[2], metrics[3], metrics[4], metrics[5]))
+
+    return metrics[0]

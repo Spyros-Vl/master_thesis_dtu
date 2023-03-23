@@ -79,20 +79,21 @@ def main():
     id2label = {k: v['name'] for k,v in cats.items()}
 
     #load the model
-    model = DetrForObjectDetection.from_pretrained(checkpoint,num_labels=len(id2label),id2label={0:"text",1:"fracture"},
+    model = DetrForObjectDetection.from_pretrained(checkpoint,revision="no_timm",num_labels=len(id2label),id2label={0:"text",1:"fracture"},
                                                              ignore_mismatched_sizes=True)    
     model.to(device)
 
-    #params = [p for p in model.parameters() if p.requires_grad]
-    #optimizer = torch.optim.SGD(params, lr=0.005,momentum=0.9, weight_decay=0.0005)
-    #optimizer = torch.optim.AdamW(params, lr=1e-4, weight_decay=1e-4)
-    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4, weight_decay=0.05)
-
-    # set up learning rate scheduler
-    warmup_steps = 1000
-    total_steps = 50000
-    #lr_scheduler = LambdaLR(optimizer, lr_lambda=lambda step: (1 - step / (total_steps + 1)))
-    #lr_scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=warmup_steps, T_mult=2)
+   
+    #optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4, weight_decay=0.05)
+    param_dicts = [
+            {"params": [p for n, p in model.named_parameters() if "backbone" not in n and p.requires_grad]},
+            {
+                 "params": [p for n, p in model.named_parameters() if "backbone" in n and p.requires_grad],
+                 "lr": 1e-5,
+            },
+    ]
+    optimizer = torch.optim.AdamW(param_dicts, lr=1e-4,weight_decay=1e-4)
+   
 
     train_loss = []
     val_loss = []

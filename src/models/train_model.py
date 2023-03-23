@@ -74,70 +74,47 @@ def main():
 
     params = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.SGD(params, lr=0.005,momentum=0.9, weight_decay=0.0005)
-    # and a learning rate scheduler
-    #lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=3,gamma=0.1)
 
     train_loss = []
     val_loss = []
+
+    best_loss = float('inf')
 
 
     print('----------------------train started--------------------------')
 
     for epoch in range(NumOfEpochs):
+        
         start = time.time()
         model.train()
-        model.to(device)
-        i = 0    
-        epoch_loss = 0
-        for imgs, annotations in tqdm(training_dataloader):
-            i += 1
-            
-            imgs =list(img.to(device) for img in imgs)
-            annotations = [{k: v.to(device) for k, v in t.items()} for t in annotations]
-
-
-            loss_dict = model(imgs, annotations) 
-            losses = sum(loss for loss in loss_dict.values())        
-
-            optimizer.zero_grad()
-            losses.backward()
-            optimizer.step()
-            #lr_scheduler.step() 
-            epoch_loss += losses
-        
+        model.to(device)  
+    
+        #training step
+        epoch_loss = train_one_epoch(model,training_dataloader,device,optimizer)
         train_loss.append(epoch_loss)
 
-        # Validate the model
-        #model#.eval()
-        validation_loss = 0.0
-
-        for imgs, annotations in tqdm(validation_dataloader):
-            #imgs, annotations = imgs.to(device), annotations.to(device)
-            i += 1
-            imgs =list(img.to(device) for img in imgs)
-            annotations = [{k: v.to(device) for k, v in t.items()} for t in annotations]
-
-      
-
-            with torch.no_grad():
-                loss_dict_val = model(imgs, annotations)
-                
-                losses_val = sum(loss for loss in loss_dict_val.values())
-                validation_loss += losses_val.item()
-        
+        #validation step
+        validation_loss = validation_step(model,device,validation_dataloader,coco_gt)
         val_loss.append(validation_loss)
 
         wandb.log({'epoch': epoch+1,"training_loss": epoch_loss,"validation_loss": validation_loss})
 
         print(f'Epoch {epoch+1}: train_loss={epoch_loss}, val_loss={validation_loss}, time : {time.time() - start}')
-        # Save the lists to a pickle file
-        # Create a dictionary containing the lists
+        
+        # check if the current validation loss is the new best
+        if validation_loss < best_loss:
+            best_loss = validation_loss
+            # save the model checkpoint
+            model.to("cpu")
+            checkpoint = {
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'best_loss': best_loss
+            }
+            torch.save(checkpoint,f'CNN_Model.pt')
+            print("Model state saved on epoch: ", (epoch+1))
 
-        model.to("cpu")
-        #save the model state
-        torch.save(model.state_dict(),f'CNN_Model.pt')
-
-        print("Model state saved on epoch: ", (epoch+1))
 
 
     print('----------------------train ended--------------------------')
@@ -148,13 +125,6 @@ def main():
     # Save the lists to a pickle file
     with open('losses_CNN.pickle', 'wb') as f:
         pickle.dump(data, f)
-
-    model.to("cpu")
-    #save the model state
-    torch.save(model.state_dict(),f'test.pt')
-
-
-
 
 
 if __name__ == '__main__':
