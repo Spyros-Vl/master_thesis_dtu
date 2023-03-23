@@ -234,7 +234,6 @@ def prepare_for_coco_detection(predictions):
 def train_one_epoch(model,training_dataloader,device,optimizer):
     
     for imgs, annotations in tqdm(training_dataloader):
-        i += 1
             
         imgs =list(img.to(device) for img in imgs)
         annotations = [{k: v.to(device) for k, v in t.items()} for t in annotations]
