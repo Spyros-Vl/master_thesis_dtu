@@ -66,7 +66,7 @@ def main():
 
     #load validation data
     validation_dataset = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/validation_pickles'))
-    validation_dataloader = DataLoader(validation_dataset, batch_size=BatchSize, shuffle=False, num_workers=num_workers,collate_fn=collate_fn)
+    validation_dataloader = DataLoader(validation_dataset, batch_size=1, shuffle=False, num_workers=4,collate_fn=collate_fn)
 
     #load the model
     model = get_model_instance_segmentation(NumOfClasses)
@@ -79,6 +79,14 @@ def main():
     val_loss = []
 
     best_loss = float('inf')
+
+    #load the validation coco dataset for the eval
+    # Load the COCO object from a JSON file
+    with open('coco_gt.json', 'r') as f:
+        coco_gt_data = json.load(f)
+    coco_gt = COCO()
+    coco_gt.dataset = coco_gt_data
+    coco_gt.createIndex()
 
 
     print('----------------------train started--------------------------')
