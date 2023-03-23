@@ -8,8 +8,8 @@ import pathlib
 from torch.utils.data import DataLoader
 import sys
 sys.path.append('../')
-from master_thesis_dtu.src.data.my_rpg_dataset import CocoDetection
-from master_thesis_dtu.src.data.my_rpg_dataset import collate_fn_COCO
+from src.data.my_rpg_dataset import CocoDetection
+from src.data.my_rpg_dataset import collate_fn_COCO
 from tqdm import tqdm
 
 #for model
@@ -50,7 +50,7 @@ def main():
 
     #defines
     NumOfClasses = 2 
-    NumOfEpochs = 10
+    NumOfEpochs = 100
     BatchSize = 16
     num_workers = 8
     checkpoint = "facebook/detr-resnet-50"
@@ -91,8 +91,8 @@ def main():
     # set up learning rate scheduler
     warmup_steps = 1000
     total_steps = 50000
-    lr_scheduler = LambdaLR(optimizer, lr_lambda=lambda step: (1 - step / (total_steps + 1)))
-    lr_scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=warmup_steps, T_mult=2)
+    #lr_scheduler = LambdaLR(optimizer, lr_lambda=lambda step: (1 - step / (total_steps + 1)))
+    #lr_scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=warmup_steps, T_mult=2)
 
     train_loss = []
     val_loss = []
@@ -134,11 +134,11 @@ def main():
             loss.backward()
             optimizer.step()
             # update learning rate
-            lr_scheduler.step() 
+            #lr_scheduler.step() 
             epoch_loss += loss
 
             
-        wandb.log({'epoch': epoch+1,"training_loss": epoch_loss,'learning_rate': lr_scheduler.get_lr()})
+        wandb.log({'epoch': epoch+1,"training_loss": epoch_loss})
 
         train_loss.append(epoch_loss)
 
