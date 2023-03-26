@@ -17,7 +17,7 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection import FasterRCNN
 from torchvision.models.detection.rpn import AnchorGenerator, RPNHead, RegionProposalNetwork
 import torch
-from utils import *
+from src.models.utils import *
 import numpy as np
 from torchvision.ops import box_iou
 from pycocotools.coco import COCO
