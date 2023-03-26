@@ -52,8 +52,8 @@ def main():
 
     #load the model state
     model = get_model_instance_segmentation(3)
-    model.load_state_dict(torch.load(f'CNN_Model.pt'))
-    model.to(device)
+    best_model = torch.load(f'CNN_Model.pt')
+    model.load_state_dict(best_model['model_state_dict'])
 
 
     print('----------------------Model evaluation started--------------------------')
