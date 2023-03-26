@@ -103,3 +103,5 @@ lightning_logs
 *.pickle
 #models
 *.pt
+*.json
+*.sh
