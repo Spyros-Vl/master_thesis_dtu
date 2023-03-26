@@ -39,7 +39,7 @@ def main():
     NumOfClasses = 3 
     NumOfEpochs = 100
     BatchSize = 16
-    num_workers = 0
+    num_workers = 8
 
     #SET Weights & Biases
     wandb.init(
@@ -78,7 +78,7 @@ def main():
     train_loss = []
     val_loss = []
 
-    best_loss = float('inf')
+    best_loss = 0
 
     #load the validation coco dataset for the eval
     # Load the COCO object from a JSON file
@@ -110,7 +110,7 @@ def main():
         print(f'Epoch {epoch+1}: train_loss={epoch_loss}, val_loss={validation_loss}, time : {time.time() - start}')
         
         # check if the current validation loss is the new best
-        if validation_loss < best_loss:
+        if validation_loss > best_loss:
             best_loss = validation_loss
             # save the model checkpoint
             model.to("cpu")

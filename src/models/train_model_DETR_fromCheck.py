@@ -52,7 +52,7 @@ def main():
     NumOfClasses = 2 
     NumOfEpochs = 200
     BatchSize = 16
-    num_workers = 8
+    num_workers = 6
     checkpoint = "facebook/detr-resnet-50"
 
     #SET Weights & Biases
@@ -84,13 +84,14 @@ def main():
     #params = [p for p in model.parameters() if p.requires_grad]
     #optimizer = torch.optim.SGD(params, lr=0.005,momentum=0.9, weight_decay=0.0005)
     #optimizer = torch.optim.AdamW(params, lr=1e-4, weight_decay=1e-4)
-    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4, weight_decay=0.05)
-
-    # set up learning rate scheduler
-    warmup_steps = 1000
-    total_steps = 50000
-    lr_scheduler = LambdaLR(optimizer, lr_lambda=lambda step: (1 - step / (total_steps + 1)))
-    lr_scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=warmup_steps, T_mult=2)
+    param_dicts = [
+            {"params": [p for n, p in model.named_parameters() if "backbone" not in n and p.requires_grad]},
+            {
+                 "params": [p for n, p in model.named_parameters() if "backbone" in n and p.requires_grad],
+                 "lr": 1e-5,
+            },
+    ]
+    optimizer = torch.optim.AdamW(param_dicts, lr=1e-4,weight_decay=1e-4)
 
     train_loss = []
     val_loss = []

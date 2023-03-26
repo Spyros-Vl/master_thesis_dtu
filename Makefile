@@ -39,3 +39,7 @@ run:
 
 kill:
 	bkill $(ID)
+
+#run job file
+test:
+	bsub < test_jobscript.sh

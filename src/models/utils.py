@@ -279,6 +279,7 @@ def validation_step(model,device,validation_dataloader,coco_gt):
     # Run evaluation
     coco_eval.evaluate()
     coco_eval.accumulate()
+    coco_eval.summarize()
 
     # Get the evaluation metrics
     metrics = coco_eval.stats
