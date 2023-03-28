@@ -94,7 +94,7 @@ def main():
 
     #load the test coco dataset for the eval
     # Load the COCO object from a JSON file
-    with open('coco_gt.json', 'r') as f:
+    with open('test_coco_gt.json', 'r') as f:
         coco_gt_data = json.load(f)
     coco_gt = COCO()
     coco_gt.dataset = coco_gt_data
