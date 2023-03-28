@@ -101,6 +101,7 @@ def main():
     train_loss = []
     val_loss = []
     best_loss = 0
+    validation_loss = 0
 
     # watch the model and optimizer
     wandb.watch(model, log="all")
@@ -118,8 +119,9 @@ def main():
 
         #validate the model
         #validation step
-        validation_loss = validation_step_DETR(model,device,validation_dataset,validation_dataloader,processor)
-        val_loss.append(validation_loss)
+        if epoch > 2:
+            validation_loss = validation_step_DETR(model,device,validation_dataset,validation_dataloader,processor)
+            val_loss.append(validation_loss)
             
         wandb.log({'epoch': epoch+1,"training_loss": epoch_loss,"validation_loss": val_loss})
 

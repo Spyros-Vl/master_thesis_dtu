@@ -102,9 +102,9 @@ def main():
         train_loss.append(epoch_loss)
 
         #validation step
-        if epoch > 2 :
-            validation_loss = validation_step(model,device,validation_dataloader,coco_gt)
-            val_loss.append(validation_loss)
+        
+        validation_loss = validation_step(model,device,validation_dataloader,coco_gt)
+        val_loss.append(validation_loss)
 
         wandb.log({'epoch': epoch+1,"training_loss": epoch_loss,"validation_loss": validation_loss})
 
