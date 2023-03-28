@@ -314,7 +314,7 @@ def train_one_epoch_DETR(model,train_dataloader,device,optimizer):
 
 def validation_step_DETR(model,device,validation_dataset,validation_dataloader,processor):
 
-    evaluator = CocoEvaluator(coco_gt=validation_dataset.coco, iou_types=["bbox"])
+    #evaluator = CocoEvaluator(coco_gt=validation_dataset.coco, iou_types=["bbox"])
 
     print("Running evaluation...")
     for idx, batch in enumerate(tqdm(validation_dataloader)):
@@ -335,14 +335,23 @@ def validation_step_DETR(model,device,validation_dataset,validation_dataloader,p
         # containing image_id, category_id, bbox and score keys 
         predictions = {target['image_id'].item(): output for target, output in zip(labels, results)}
         predictions = prepare_for_coco_detection(predictions)
-        evaluator.update(predictions)
+        results.append(predictions)
+        #coco_dt = coco_gt.loadRes(results)
+        #evaluator.update(predictions)
 
-    evaluator.synchronize_between_processes()
-    evaluator.accumulate()
-    evaluator.summarize()
+    # Load your model's results into the COCOeval object
+    coco_gt=validation_dataset.coco
+    coco_dt = coco_gt.loadRes(results)
+
+    coco_eval = COCOeval(coco_gt,coco_dt, 'bbox')
+    #evaluator.synchronize_between_processes()
+    # Run evaluation
+    coco_eval.evaluate()
+    coco_eval.accumulate()
+    coco_eval.summarize()
 
     # Get the evaluation metrics
-    metrics = evaluator.stats
+    metrics = coco_eval.stats
 
     print('Evaluation metrics: AP = {:.4f}, AP50 = {:.4f}, AP75 = {:.4f}, APs = {:.4f}, APm = {:.4f}, APl = {:.4f}'.format(metrics[0], metrics[1], metrics[2], metrics[3], metrics[4], metrics[5]))
 
