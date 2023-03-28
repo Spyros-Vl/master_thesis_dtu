@@ -27,6 +27,7 @@ import torch
 
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
+from coco_eval import CocoEvaluator
 
 
 
@@ -286,4 +287,63 @@ def validation_step(model,device,validation_dataloader,coco_gt):
 
     print('Evaluation metrics: AP = {:.4f}, AP50 = {:.4f}, AP75 = {:.4f}, APs = {:.4f}, APm = {:.4f}, APl = {:.4f}'.format(metrics[0], metrics[1], metrics[2], metrics[3], metrics[4], metrics[5]))
 
-    return metrics[0]
+    return metrics[1]
+
+def train_one_epoch_DETR(model,train_dataloader,device,optimizer):
+
+    epoch_loss = 0
+
+    for idx, batch in enumerate(tqdm(train_dataloader)):
+            
+        # get the inputs
+        pixel_values = batch["pixel_values"].to(device)
+        pixel_mask = batch["pixel_mask"].to(device)
+        labels = [{k: v.to(device) for k, v in t.items()} for t in batch["labels"]]
+
+        outputs = model(pixel_values=pixel_values, pixel_mask=pixel_mask, labels=labels)
+
+        loss = outputs.loss
+
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.1)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step() 
+        epoch_loss += loss
+    
+    return epoch_loss
+
+def validation_step_DETR(model,device,validation_dataset,validation_dataloader,processor):
+
+    evaluator = CocoEvaluator(coco_gt=validation_dataset.coco, iou_types=["bbox"])
+
+    print("Running evaluation...")
+    for idx, batch in enumerate(tqdm(validation_dataloader)):
+        # get the inputs
+        pixel_values = batch["pixel_values"].to(device)
+        pixel_mask = batch["pixel_mask"].to(device)
+        labels = [{k: v.to(device) for k, v in t.items()} for t in batch["labels"]] # these are in DETR format, resized + normalized
+
+        # forward pass
+        with torch.no_grad():
+            outputs = model(pixel_values=pixel_values, pixel_mask=pixel_mask)
+
+        # turn into a list of dictionaries (one item for each example in the batch)
+        orig_target_sizes = torch.stack([target["orig_size"] for target in labels], dim=0)
+        results = processor.post_process_object_detection(outputs, target_sizes=orig_target_sizes)
+        # provide to metric
+        # metric expects a list of dictionaries, each item 
+        # containing image_id, category_id, bbox and score keys 
+        predictions = {target['image_id'].item(): output for target, output in zip(labels, results)}
+        predictions = prepare_for_coco_detection(predictions)
+        evaluator.update(predictions)
+
+    evaluator.synchronize_between_processes()
+    evaluator.accumulate()
+    evaluator.summarize()
+
+    # Get the evaluation metrics
+    metrics = evaluator.stats
+
+    print('Evaluation metrics: AP = {:.4f}, AP50 = {:.4f}, AP75 = {:.4f}, APs = {:.4f}, APm = {:.4f}, APl = {:.4f}'.format(metrics[0], metrics[1], metrics[2], metrics[3], metrics[4], metrics[5]))
+
+    return metrics[1]

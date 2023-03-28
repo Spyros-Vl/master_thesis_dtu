@@ -114,8 +114,15 @@ def read_images(inp, tar):
 
 
 class CocoDetection(torchvision.datasets.CocoDetection):
-    def __init__(self, path_folder, processor, train=True):
-        ann_file = os.path.join(path_folder, "train_coco_data.json" if train else "test_coco_data.json")
+    def __init__(self, path_folder, processor, status="train"):
+        if status == "train":
+            ann_file = os.path.join(path_folder, "train_coco_data.json")
+        elif status == "validation":
+            ann_file = os.path.join(path_folder, "val_coco_data.json")
+        elif status == "test":
+            ann_file = os.path.join(path_folder, "test_coco_data.json")
+        else:
+            raise ValueError("Invalid value for status. Expected 'train', 'validation', or 'test'.")
         super(CocoDetection, self).__init__(path_folder, ann_file)
         self.processor = processor
 
