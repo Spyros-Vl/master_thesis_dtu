@@ -330,6 +330,10 @@ def validation_step_DETR(model,device,validation_dataset,validation_dataloader,p
         # turn into a list of dictionaries (one item for each example in the batch)
         orig_target_sizes = torch.stack([target["orig_size"] for target in labels], dim=0)
         results = processor.post_process_object_detection(outputs, target_sizes=orig_target_sizes)
+
+        if results[0]['boxes'].numel() == 0:
+            print("Validation skipped")
+            return 0
         # provide to metric
         # metric expects a list of dictionaries, each item 
         # containing image_id, category_id, bbox and score keys 

@@ -127,7 +127,7 @@ def main():
 
         train_loss.append(epoch_loss)
 
-        print(f'Epoch {epoch+1}: train_loss={epoch_loss}," validation_loss=": {val_loss}, time : {time.time() - start}')
+        print(f'Epoch {epoch+1}: train_loss={epoch_loss}," validation_loss=": {validation_loss}, time : {time.time() - start}')
 
         # check if the current validation loss is the new best
         if validation_loss > best_loss:
