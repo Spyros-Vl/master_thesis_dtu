@@ -37,8 +37,8 @@ def main():
 
     #defines
     NumOfClasses = 3 
-    NumOfEpochs = 100
-    BatchSize = 16
+    NumOfEpochs = 300
+    BatchSize = 32
     num_workers = 8
 
     #SET Weights & Biases

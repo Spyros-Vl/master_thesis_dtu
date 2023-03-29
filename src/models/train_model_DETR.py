@@ -50,7 +50,7 @@ def main():
 
     #defines
     NumOfClasses = 2 
-    NumOfEpochs = 100
+    NumOfEpochs = 300
     BatchSize = 16
     num_workers = 8
     checkpoint = "facebook/detr-resnet-50"
@@ -119,7 +119,7 @@ def main():
 
         #validate the model
         #validation step
-        if epoch > 1:
+        if epoch > 4:
             validation_loss = validation_step_DETR(model,device,validation_dataset,validation_dataloader,processor)
             val_loss.append(validation_loss)
             
