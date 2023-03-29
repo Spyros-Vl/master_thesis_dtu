@@ -27,7 +27,7 @@ import torch
 
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
-from coco_eval import CocoEvaluator
+from coco_eval import *
 
 
 
@@ -340,12 +340,12 @@ def validation_step_DETR(model,device,validation_dataset,validation_dataloader,p
    
     evaluator.synchronize_between_processes()
     # Run evaluation
-    evaluator.evaluate()
     evaluator.accumulate()
     evaluator.summarize()
 
-    # Get the evaluation metrics
-    metrics = evaluator.stats
+    evaluator.coco_eval['bbox'].evaluate()
+    metrics =evaluator.coco_eval['bbox'].stats
+
 
     print('Evaluation metrics: AP = {:.4f}, AP50 = {:.4f}, AP75 = {:.4f}, APs = {:.4f}, APm = {:.4f}, APl = {:.4f}'.format(metrics[0], metrics[1], metrics[2], metrics[3], metrics[4], metrics[5]))
 
