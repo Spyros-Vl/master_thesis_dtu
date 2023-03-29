@@ -119,7 +119,7 @@ def main():
 
         #validate the model
         #validation step
-        if epoch > 4:
+        if epoch > 3:
             validation_loss = validation_step_DETR(model,device,validation_dataset,validation_dataloader,processor)
             val_loss.append(validation_loss)
             
