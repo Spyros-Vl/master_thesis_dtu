@@ -37,7 +37,7 @@ def main():
 
     #defines
     BatchSize = 1
-    num_workers =0
+    num_workers =5
 
     score_threshold = 0.8
     iou_threshold = 0.5
