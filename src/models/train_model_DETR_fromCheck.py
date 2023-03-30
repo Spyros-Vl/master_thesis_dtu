@@ -72,13 +72,22 @@ def main():
 
     processor = DetrImageProcessor.from_pretrained(checkpoint)
 
-    train_dataset = CocoDetection(path_folder="data", processor=processor,train=True)
+    train_dataset = CocoDetection(path_folder="data", processor=processor,status="train")
     train_dataloader = DataLoader(train_dataset, collate_fn=collate_fn_COCO, batch_size=BatchSize, shuffle=True,num_workers=num_workers)
 
-    config = DetrConfig.from_pretrained('facebook/detr-resnet-50',id2label={0:"text",1:"fracture"}) 
+    validation_dataset = CocoDetection(path_folder="data", processor=processor,status="validation")
+    validation_dataloader = DataLoader(validation_dataset, collate_fn=collate_fn_COCO, batch_size=1, shuffle=False,num_workers=num_workers)
+
+    cats = train_dataset.coco.cats
+    id2label = {k: v['name'] for k,v in cats.items()}
+
+    config = DetrConfig.from_pretrained(checkpoint,revision="no_timm",num_labels=len(id2label),id2label={0:"text",1:"fracture"},
+                                                             ignore_mismatched_sizes=True) 
                                                              
     model = DetrForObjectDetection(config)
     model.load_state_dict(torch.load(f'DETR_model.pt'))
+
+    model.to(device)
 
 
     #params = [p for p in model.parameters() if p.requires_grad]
@@ -104,68 +113,41 @@ def main():
     for epoch in range(NumOfEpochs):
         start = time.time()
         model.train()
-        model.to(device)
-        i = 0    
+        model.to(device)   
         epoch_loss = 0
-        for idx, batch in enumerate(tqdm(train_dataloader)):
+
+        #train one epoch
+        epoch_loss = train_one_epoch_DETR(model,train_dataloader,device,optimizer)
+
+        #validate the model
+        #validation step
+        
+        validation_loss = validation_step_DETR(model,device,validation_dataset,validation_dataloader,processor)
+        val_loss.append(validation_loss)
             
-            # get the inputs
-            pixel_values = batch["pixel_values"].to(device)
-            pixel_mask = batch["pixel_mask"].to(device)
-            labels = [{k: v.to(device) for k, v in t.items()} for t in batch["labels"]]
-            
-            t = labels[0]['boxes']
-    
-            # Check if the tensor contains NaNs
-            has_nans = torch.isnan(t).any().item()
-
-            if has_nans:
-                print("The tensor contains NaNs.")
-                print(t)
-                continue
-
-            outputs = model(pixel_values=pixel_values, pixel_mask=pixel_mask, labels=labels)
-
-            loss = outputs.loss
-
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.1)
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            # update learning rate
-            lr_scheduler.step() 
-            epoch_loss += loss
-
-            
-        wandb.log({'epoch': epoch+1,"training_loss": epoch_loss,'learning_rate': lr_scheduler.get_lr()})
+        wandb.log({'epoch': epoch+1,"training_loss": epoch_loss,"validation_loss": val_loss})
 
         train_loss.append(epoch_loss)
 
-        print(f'Epoch {epoch+1}: train_loss={epoch_loss}, time : {time.time() - start}')
+        print(f'Epoch {epoch+1}: train_loss={epoch_loss}," validation_loss=": {validation_loss}, time : {time.time() - start}')
 
-        model.to("cpu")
-        #save the model state
-        torch.save(model.state_dict(),f'DETR_Model.pt')
-
-        print("Model state saved on epoch: ", (epoch+1))
+        # check if the current validation loss is the new best
+        if validation_loss > best_loss:
+            best_loss = validation_loss
+            # save the model checkpoint
+            model.to("cpu")
+            checkpoint = {
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'best_loss': best_loss
+            }
+            torch.save(checkpoint,f'DETR_Model.pt')
+            print("Model state saved on epoch: ", (epoch+1))
 
     wandb.finish()
     
     print('----------------------train ended--------------------------')
-
-    val_loss = 0
-
-    # Create a dictionary containing the lists
-    data = {'val_loss': val_loss, 'epoch_loss': epoch_loss}
-
-    # Save the lists to a pickle file
-    with open('losses_DETR.pickle', 'wb') as f:
-        pickle.dump(data, f)
-
-    model.to("cpu")
-    #save the model state
-    torch.save(model.state_dict(),f'DETR_Model.pt')
-
 
 
 
