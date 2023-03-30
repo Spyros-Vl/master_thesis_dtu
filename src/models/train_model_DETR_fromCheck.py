@@ -85,7 +85,8 @@ def main():
                                                              ignore_mismatched_sizes=True) 
                                                              
     model = DetrForObjectDetection(config)
-    model.load_state_dict(torch.load(f'DETR_model.pt'))
+    best_model = torch.load(f'DETR_Model.pt')
+    model.load_state_dict(best_model['model_state_dict'])
 
     model.to(device)
 
