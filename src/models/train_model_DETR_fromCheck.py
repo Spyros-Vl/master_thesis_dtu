@@ -105,6 +105,7 @@ def main():
 
     train_loss = []
     val_loss = []
+    best_loss = 0
 
     # watch the model and optimizer
     wandb.watch(model, log="all")
