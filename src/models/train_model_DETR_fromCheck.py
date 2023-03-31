@@ -23,6 +23,7 @@ import torch
 from utils import *
 from torch.optim.lr_scheduler import LambdaLR, CosineAnnealingWarmRestarts
 import wandb
+import argparse
 
 import warnings
 
@@ -33,7 +34,7 @@ warnings.filterwarnings('ignore')
 warnings.filterwarnings("ignore", message="The `max_size` parameter is deprecated and will be removed in v4.26.", category=FutureWarning)
 
 
-def main():
+def main(best_loss):
 
     # train on the GPU or on the CPU, if a GPU is not available
     if torch.cuda.is_available():    
@@ -105,10 +106,13 @@ def main():
 
     train_loss = []
     val_loss = []
-    best_loss = 0
+    best_loss = best_loss
+
 
     # watch the model and optimizer
     wandb.watch(model, log="all")
+
+    print("The training will start again from last check point, the best val value so far is : ", best_loss)
 
     print('----------------------train started--------------------------')
 
@@ -155,4 +159,14 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # create an argument parser
+    parser = argparse.ArgumentParser(description='Train a DETR model for object detection')
+    parser.add_argument('--best_loss', type=float, required=True,
+                        help='The best validation loss to use for training')
+
+    # parse the command line arguments
+    args = parser.parse_args()
+
+    # call the main function with the best_loss argument
+    main(args.best_loss)
+    
