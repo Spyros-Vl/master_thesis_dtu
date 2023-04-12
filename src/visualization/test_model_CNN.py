@@ -107,8 +107,6 @@ def main():
     print('Results with confidence = 0.5')
     validation_loss = testing_step(model,device,test_dataloader,coco_gt,0.5)
 
-    print('Results with confidence = 0.5 per class')
-    validation_loss = testing_step(model,device,test_dataloader,coco_gt,0.9)
 
 
     print('----------------------Model evaluation ended--------------------------')
