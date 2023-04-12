@@ -275,7 +275,19 @@ def validation_step(model,device,validation_dataloader,coco_gt):
     # Load your model's results into the COCOeval object
     coco_dt = coco_gt.loadRes(results)
 
-    coco_eval = COCOeval(coco_gt,coco_dt, 'bbox')
+    # Set the confidence/score threshold
+    confidence_threshold = 0.9
+
+    # Filter the predicted bounding boxes based on their confidence/score
+    coco_dt_filtered = []
+    for dt in coco_dt.dataset['annotations']:
+        if dt['score'] >= confidence_threshold:
+            coco_dt_filtered.append(dt)
+    coco_dt.dataset['annotations'] = coco_dt_filtered
+
+    # Create a COCOeval object for computing mAP
+    coco_eval = COCOeval(coco_gt, coco_dt, iouType='bbox')
+
 
     # Run evaluation
     coco_eval.evaluate()
@@ -286,6 +298,66 @@ def validation_step(model,device,validation_dataloader,coco_gt):
     metrics = coco_eval.stats
 
     print('Evaluation metrics: AP = {:.4f}, AP50 = {:.4f}, AP75 = {:.4f}, APs = {:.4f}, APm = {:.4f}, APl = {:.4f}'.format(metrics[0], metrics[1], metrics[2], metrics[3], metrics[4], metrics[5]))
+
+    return metrics[1]
+
+def testing_step(model,device,validation_dataloader,coco_gt,confidence):
+    
+    model.eval()
+    results = [] 
+    with torch.no_grad():
+        for images, targets in tqdm(validation_dataloader):
+            images = list(img.to(device) for img in images)
+            targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
+            outputs = model(images)
+            for i, output in enumerate(outputs):
+                boxes = output['boxes'].cpu().numpy()
+                scores = output['scores'].cpu().numpy()
+                labels = output['labels'].cpu().numpy()
+                image_id = targets[0]['image_id'].cpu().numpy()
+                for box, score, label in zip(boxes, scores, labels):
+                    results.append({
+                        'image_id': image_id[0],
+                        'category_id': label,
+                        'bbox': [box[0], box[1], box[2] - box[0], box[3] - box[1]],
+                        'score': score
+                    })
+
+    # Load your model's results into the COCOeval object
+    coco_dt = coco_gt.loadRes(results)
+
+    # Set the confidence/score threshold
+    confidence_threshold = confidence
+
+    # Filter the predicted bounding boxes based on their confidence/score
+    coco_dt_filtered = []
+    for dt in coco_dt.dataset['annotations']:
+        if dt['score'] >= confidence_threshold:
+            coco_dt_filtered.append(dt)
+    coco_dt.dataset['annotations'] = coco_dt_filtered
+
+    # Create a COCOeval object for computing mAP
+    coco_eval = COCOeval(coco_gt, coco_dt, iouType='bbox')
+
+    print('---Normal Eval---')
+    # Run evaluation
+    coco_eval.evaluate()
+    coco_eval.accumulate()
+    coco_eval.summarize()
+
+    # Get the evaluation metrics
+    metrics = coco_eval.stats
+
+    print('Evaluation metrics: AP = {:.4f}, AP50 = {:.4f}, AP75 = {:.4f}, APs = {:.4f}, APm = {:.4f}, APl = {:.4f}'.format(metrics[0], metrics[1], metrics[2], metrics[3], metrics[4], metrics[5]))
+
+
+    print('---Per-Class Eval---')
+    for catId in coco_gt.getCatIds():
+        print("The metrics for the ",catId)
+        coco_eval.params.catIds = [catId]
+        coco_eval.evaluate()
+        coco_eval.accumulate()
+        coco_eval.summarize()
 
     return metrics[1]
 

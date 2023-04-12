@@ -17,11 +17,9 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection import FasterRCNN
 from torchvision.models.detection.rpn import AnchorGenerator, RPNHead, RegionProposalNetwork
 import torch
-from src.models.utils import *
+from utils import *
 import numpy as np
 from torchvision.ops import box_iou
-from pycocotools.coco import COCO
-from pycocotools.cocoeval import COCOeval
 
 
 def main():
@@ -39,7 +37,7 @@ def main():
 
     #defines
     BatchSize = 1
-    num_workers =4
+    num_workers =5
 
     score_threshold = 0.8
     iou_threshold = 0.5
@@ -52,13 +50,11 @@ def main():
 
     #load the model state
     model = get_model_instance_segmentation(3)
-    best_model = torch.load(f'CNN_Model.pt')
-    model.load_state_dict(best_model['model_state_dict'])
+    model.load_state_dict(torch.load(f'CNN_Model.pt'))
+    model.to(device)
 
 
     print('----------------------Model evaluation started--------------------------')
-
-    print('The evaluation will start with calculating the accuracy for the model with IoU threshold of: ',iou_threshold,' and score threshold of: ', score_threshold)
 
     device = next(model.parameters()).device
     model.eval()
@@ -88,30 +84,10 @@ def main():
 
     accuracy = 100 * correct / total
 
+    print('----------------------train ended--------------------------')
     print('The total model accuracy in the test set was: ', accuracy)
 
-    print('Now we will evaluate the model based on the coco evaluation fucntion')
 
-
-    #load the test coco dataset for the eval
-    # Load the COCO object from a JSON file
-    with open('test_coco_gt.json', 'r') as f:
-        coco_gt_data = json.load(f)
-    coco_gt = COCO()
-    coco_gt.dataset = coco_gt_data
-    coco_gt.createIndex()
-
-    print('Results with confidence = 0.9')
-    validation_loss = testing_step(model,device,test_dataloader,coco_gt,0.9)
-
-    print('Results with confidence = 0.5')
-    validation_loss = testing_step(model,device,test_dataloader,coco_gt,0.5)
-
-    print('Results with confidence = 0.5 per class')
-    validation_loss = testing_step(model,device,test_dataloader,coco_gt,0.9)
-
-
-    print('----------------------Model evaluation ended--------------------------')
 
 
 
