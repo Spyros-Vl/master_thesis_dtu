@@ -7,12 +7,8 @@ import pathlib
 from torch.utils.data import DataLoader
 import sys
 sys.path.append('../')
-from master_thesis_dtu.src.data.my_rpg_dataset import XRayDataSet
-from master_thesis_dtu.src.data.my_rpg_dataset import collate_fn
-from tqdm import tqdm
-
-from src.data.my_rpg_dataset import CocoDetection
-from src.data.my_rpg_dataset import collate_fn_COCO
+from master_thesis_dtu.src.data.my_rpg_dataset import CocoDetection
+from master_thesis_dtu.src.data.my_rpg_dataset import collate_fn_COCO
 from tqdm import tqdm
 
 #for model
@@ -33,6 +29,11 @@ from torchvision.ops import box_iou
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 
+# Mute all warnings
+warnings.filterwarnings('ignore')
+
+# filter out FutureWarning message from transformers
+warnings.filterwarnings("ignore", message="The `max_size` parameter is deprecated and will be removed in v4.26.", category=FutureWarning)
 
 def main():
 
@@ -60,6 +61,8 @@ def main():
     best_model = torch.load(f'DETR_Model.pt',map_location=torch.device('cpu'))
     model.load_state_dict(best_model['model_state_dict'])
     print("The model best AP score with IoU = 0.5 in validation set was : ",best_model['best_loss'])
+
+    model.to(device)
 
 
     print('----------------------Model evaluation started--------------------------')
