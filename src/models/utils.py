@@ -275,16 +275,6 @@ def validation_step(model,device,validation_dataloader,coco_gt):
     # Load your model's results into the COCOeval object
     coco_dt = coco_gt.loadRes(results)
 
-    # Set the confidence/score threshold
-    confidence_threshold = 0.9
-
-    # Filter the predicted bounding boxes based on their confidence/score
-    coco_dt_filtered = []
-    for dt in coco_dt.dataset['annotations']:
-        if dt['score'] >= confidence_threshold:
-            coco_dt_filtered.append(dt)
-    coco_dt.dataset['annotations'] = coco_dt_filtered
-
     # Create a COCOeval object for computing mAP
     coco_eval = COCOeval(coco_gt, coco_dt, iouType='bbox')
 
