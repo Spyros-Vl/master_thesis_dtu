@@ -55,12 +55,14 @@ def main():
     best_model = torch.load(f'CNN_Model.pt')
     model.load_state_dict(best_model['model_state_dict'])
 
+    model.to(device)
+
 
     print('----------------------Model evaluation started--------------------------')
 
     print('The evaluation will start with calculating the accuracy for the model with IoU threshold of: ',iou_threshold,' and score threshold of: ', score_threshold)
 
-    device = next(model.parameters()).device
+    
     model.eval()
     correct = 0
     total = 0
