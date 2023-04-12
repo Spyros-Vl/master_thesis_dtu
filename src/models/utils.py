@@ -315,17 +315,16 @@ def testing_step(model,device,validation_dataloader,coco_gt,confidence):
                 scores = output['scores'].cpu().numpy()
                 labels = output['labels'].cpu().numpy()
                 image_id = targets[0]['image_id'].cpu().numpy()
-                for b, s, l in zip(boxes, scores, labels):
-                    score = s[s > confidence]
-                    label = l[s > confidence]
-                    box = b[s > confidence]
-                    results.append({
-                        'image_id': image_id[0],
-                        'category_id': label,
-                        'bbox': [box[0], box[1], box[2] - box[0], box[3] - box[1]],
-                        'score': score
-                    })
+                for box, score, label in zip(boxes, scores, labels):
+                    if score > confidence :
+                        results.append({
+                            'image_id': image_id[0],
+                            'category_id': label,
+                            'bbox': [box[0], box[1], box[2] - box[0], box[3] - box[1]],
+                            'score': score
+                        })
 
+    
     # Load your model's results into the COCOeval object
     coco_dt = coco_gt.loadRes(results)
 
