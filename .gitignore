@@ -102,6 +102,7 @@ lightning_logs
 *.out
 *.pickle
 #models
+.sh
 *.pt
 *.json
 *.sh
