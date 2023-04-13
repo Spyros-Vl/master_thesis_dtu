@@ -73,9 +73,9 @@ def main():
     model.to(device)
 
     params = [p for p in model.parameters() if p.requires_grad]
-    optimizer = torch.optim.AdamW(params, lr=0.005, betas=(0.9, 0.999), weight_decay=0.0005)
+    #optimizer = torch.optim.AdamW(params, lr=0.005, betas=(0.9, 0.999), weight_decay=0.0005)
 
-    #optimizer = torch.optim.SGD(params, lr=0.005,momentum=0.9, weight_decay=0.0005)
+    optimizer = torch.optim.SGD(params, lr=0.005,momentum=0.9, weight_decay=0.0005)
 
     train_loss = []
     val_loss = []
@@ -123,19 +123,23 @@ def main():
                 'optimizer_state_dict': optimizer.state_dict(),
                 'best_loss': best_loss
             }
-            torch.save(checkpoint,f'CNN_Model.pt')
+            torch.save(checkpoint,f'Best_val_CNN_Model.pt')
             print("Model state saved on epoch: ", (epoch+1))
 
 
 
     print('----------------------train ended--------------------------')
 
-    # Create a dictionary containing the lists
-    data = {'val_loss': val_loss, 'epoch_loss': epoch_loss}
-
-    # Save the lists to a pickle file
-    with open('losses_CNN.pickle', 'wb') as f:
-        pickle.dump(data, f)
+    # save the model from last epoch to train more
+    model.to("cpu")
+    checkpoint = {
+        'epoch': epoch,
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'best_loss': best_loss
+    }
+    torch.save(checkpoint,f'Last_CNN_Model.pt')
+    print("Model state saved on epoch: ", (epoch+1))
 
 
 if __name__ == '__main__':

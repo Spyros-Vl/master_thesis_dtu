@@ -50,7 +50,7 @@ def main():
 
     #defines
     NumOfClasses = 2 
-    NumOfEpochs = 300
+    NumOfEpochs = 400
     BatchSize = 16
     num_workers = 8
     checkpoint = "facebook/detr-resnet-50"
@@ -66,7 +66,7 @@ def main():
         "dataset": "Pediatric wrist trauma X-ray",
         "epochs": NumOfEpochs,
         "BatchSize": BatchSize,
-        "Optimizer": "ADAM",
+        "Optimizer": "ADAMW",
         }
     )
 
@@ -140,12 +140,23 @@ def main():
                 'optimizer_state_dict': optimizer.state_dict(),
                 'best_loss': best_loss
             }
-            torch.save(checkpoint,f'DETR_Model.pt')
+            torch.save(checkpoint,f'Best_val_DETR_Model.pt')
             print("Model state saved on epoch: ", (epoch+1))
 
     wandb.finish()
     
     print('----------------------train ended--------------------------')
+
+    # save the model from last epoch to train more
+    model.to("cpu")
+    checkpoint = {
+        'epoch': epoch,
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'best_loss': best_loss
+    }
+    torch.save(checkpoint,f'Last_DETR_Model.pt')
+    print("Model state saved on epoch: ", (epoch+1))
 
 
 

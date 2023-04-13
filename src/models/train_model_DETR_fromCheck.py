@@ -86,7 +86,7 @@ def main(best_loss):
                                                              ignore_mismatched_sizes=True) 
                                                              
     model = DetrForObjectDetection(config)
-    best_model = torch.load(f'DETR_Model.pt')
+    best_model = torch.load(f'Last_DETR_Model.pt')
     model.load_state_dict(best_model['model_state_dict'])
 
     model.to(device)
@@ -154,6 +154,17 @@ def main(best_loss):
     wandb.finish()
     
     print('----------------------train ended--------------------------')
+
+    # save the model from last epoch to train more
+    model.to("cpu")
+    checkpoint = {
+        'epoch': epoch,
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'best_loss': best_loss
+    }
+    torch.save(checkpoint,f'Last_DETR_Model.pt')
+    print("Model state saved on epoch: ", (epoch+1))
 
 
 

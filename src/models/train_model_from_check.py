@@ -20,9 +20,10 @@ from torchvision.models.detection.rpn import AnchorGenerator, RPNHead, RegionPro
 import torch
 from utils import *
 import wandb
+import argparse
 
 
-def main():
+def main(best_loss):
 
     # train on the GPU or on the CPU, if a GPU is not available
     if torch.cuda.is_available():    
@@ -70,7 +71,7 @@ def main():
 
     #load the model
     model = get_model_instance_segmentation(NumOfClasses)
-    model.load_state_dict(torch.load(f'CNN_Model.pt'))
+    model.load_state_dict(torch.load(f'Last_CNN_Model.pt'))
     model.to(device)
 
     params = [p for p in model.parameters() if p.requires_grad]
@@ -81,82 +82,79 @@ def main():
     train_loss = []
     val_loss = []
 
+    best_loss = best_loss
+
+    #load the validation coco dataset for the eval
+    # Load the COCO object from a JSON file
+    with open('coco_gt.json', 'r') as f:
+        coco_gt_data = json.load(f)
+    coco_gt = COCO()
+    coco_gt.dataset = coco_gt_data
+    coco_gt.createIndex()
+
 
     print('----------------------train started--------------------------')
 
     for epoch in range(NumOfEpochs):
+        
         start = time.time()
         model.train()
-        model.to(device)
-        i = 0    
-        epoch_loss = 0
-        for imgs, annotations in tqdm(training_dataloader):
-            i += 1
-            
-            imgs =list(img.to(device) for img in imgs)
-            annotations = [{k: v.to(device) for k, v in t.items()} for t in annotations]
-
-
-            loss_dict = model(imgs, annotations) 
-            losses = sum(loss for loss in loss_dict.values())        
-
-            optimizer.zero_grad()
-            losses.backward()
-            optimizer.step()
-            #lr_scheduler.step() 
-            epoch_loss += losses
-        
+        model.to(device)  
+    
+        #training step
+        epoch_loss = train_one_epoch(model,training_dataloader,device,optimizer)
         train_loss.append(epoch_loss)
 
-        # Validate the model
-        #model#.eval()
-        validation_loss = 0.0
-
-        for imgs, annotations in tqdm(validation_dataloader):
-            #imgs, annotations = imgs.to(device), annotations.to(device)
-            i += 1
-            imgs =list(img.to(device) for img in imgs)
-            annotations = [{k: v.to(device) for k, v in t.items()} for t in annotations]
-
-      
-
-            with torch.no_grad():
-                loss_dict_val = model(imgs, annotations)
-                
-                losses_val = sum(loss for loss in loss_dict_val.values())
-                validation_loss += losses_val.item()
+        #validation step
         
+        validation_loss = validation_step(model,device,validation_dataloader,coco_gt)
         val_loss.append(validation_loss)
 
         wandb.log({'epoch': epoch+1,"training_loss": epoch_loss,"validation_loss": validation_loss})
 
         print(f'Epoch {epoch+1}: train_loss={epoch_loss}, val_loss={validation_loss}, time : {time.time() - start}')
-        # Save the lists to a pickle file
-        # Create a dictionary containing the lists
+        
+        # check if the current validation loss is the new best
+        if validation_loss > best_loss:
+            best_loss = validation_loss
+            # save the model checkpoint
+            model.to("cpu")
+            checkpoint = {
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'best_loss': best_loss
+            }
+            torch.save(checkpoint,f'Best_val_CNN_Model.pt')
+            print("Model state saved on epoch: ", (epoch+1))
 
-        model.to("cpu")
-        #save the model state
-        torch.save(model.state_dict(),f'CNN_Model.pt')
-
-        print("Model state saved on epoch: ", (epoch+1))
 
 
     print('----------------------train ended--------------------------')
 
-    # Create a dictionary containing the lists
-    data = {'val_loss': val_loss, 'epoch_loss': epoch_loss}
-
-    # Save the lists to a pickle file
-    with open('losses_CNN.pickle', 'wb') as f:
-        pickle.dump(data, f)
-
+    # save the model from last epoch to train more
     model.to("cpu")
-    #save the model state
-    torch.save(model.state_dict(),f'test.pt')
+    checkpoint = {
+        'epoch': epoch,
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'best_loss': best_loss
+    }
+    torch.save(checkpoint,f'Last_CNN_Model.pt')
+    print("Model state saved on epoch: ", (epoch+1))
 
 
 
 
 
 if __name__ == '__main__':
-    main()
+    # create an argument parser
+    parser = argparse.ArgumentParser(description='Train a CNN model for object detection')
+    parser.add_argument('--best_loss', type=float, required=True,
+                        help='The best validation loss to use for training so far')
+
+    # parse the command line arguments
+    args = parser.parse_args()
+
+    # call the main function with the best_loss argument
+    main(args.best_loss)
