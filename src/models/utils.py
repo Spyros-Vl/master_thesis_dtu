@@ -469,7 +469,7 @@ def plot_curve(coco_eval,filename):
     plt.title("PR-Curve for Text label")
 
     plt.suptitle("PR-Curve")
-    plt.savefig('{filename}.png')
+    plt.savefig(f'{filename}.png')
 
 
 
@@ -514,3 +514,11 @@ def DETR_per_class(train_dataset,train_dataloader,device,model,processor):
         coco_eval = evaluator.coco_eval['bbox']
         metrics = coco_eval.stats
         print("The AP value on IoU = 0.5 for class {} is : {:.4f}.\n".format(id2label[catId],metrics[1]))
+
+def get_model_instance_segmentation(num_classes):
+      
+    model = torchvision.models.detection.fasterrcnn_resnet50_fpn(weights=FasterRCNN_ResNet50_FPN_Weights.DEFAULT)
+    in_features = model.roi_heads.box_predictor.cls_score.in_features
+    model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
+
+    return model
