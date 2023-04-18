@@ -5,13 +5,13 @@
 ### -- set the job Name --
 #BSUB -J Detr_val
 ### -- ask for number of cores (default: 1) --
-#BSUB -n 8
+#BSUB -n 7
 ### -- Select the resources: 1 gpu in exclusive process mode --
 #BSUB -gpu "num=1:mode=exclusive_process"
 ### -- set walltime limit: hh:mm --  maximum 24 hours for GPU-queues right now
 #BSUB -W 72:00
 # request 5GB of system-memory
-#BSUB -R "rusage[mem=8GB]"
+#BSUB -R "rusage[mem=9GB]"
 ### -- set the email address --
 # please uncomment the following line and put in your e-mail address,
 # if you want to receive e-mail notifications on a non-default address
@@ -31,4 +31,4 @@ nvidia-smi
 module load cuda/11.7
 
 ~/miniconda3/envs/hpc_env/bin/python \
-src/models/train_model_DETR_fromCheck.py
+src/models/train_model_DETR_fromCheck.py --best_loss 0.84918
