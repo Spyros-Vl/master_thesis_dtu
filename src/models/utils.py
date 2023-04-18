@@ -336,6 +336,8 @@ def testing_step(model,device,validation_dataloader,coco_gt,confidence):
 
     print('Evaluation metrics: AP = {:.4f}, AP50 = {:.4f}, AP75 = {:.4f}, APs = {:.4f}, APm = {:.4f}, APl = {:.4f}'.format(metrics[0], metrics[1], metrics[2], metrics[3], metrics[4], metrics[5]))
 
+    plot_curve(coco_eval,"cnn_plot")
+    
     #print the recall and the precision
     f = (coco_eval.eval['recall'][0][0][0][2]*100)
     t = (coco_eval.eval['recall'][0][1][0][2]*100)
@@ -357,7 +359,7 @@ def testing_step(model,device,validation_dataloader,coco_gt,confidence):
         metrics = coco_eval.stats
         print("The AP value on IoU = 0.5 for class {} is : {:.4f}.\n".format(id2label[catId],metrics[1]))
 
-    plot_curve(coco_eval,"cnn_plot")
+    
 
 
     return metrics[1]

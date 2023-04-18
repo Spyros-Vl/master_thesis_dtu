@@ -106,12 +106,13 @@ def main():
     t = (coco_eval.eval['recall'][0][0][0][2]*100)
     print("Secondary Evaluation Metrics :\n The AP value on IoU = 0.5 that matters the most is : {:.4f}.\n The Recall of the model for Text label is : {:.4f}. The Precision of the model for Text is : {:.4f}.\n The Recall of the model for Fracture label is : {:.4f}. The Precision of the model for Fracture is : {:.4f}".format(metrics[1], coco_eval.eval['recall'][0][0][0][2], coco_eval.eval['precision'][0][int(t)][0][0][2], coco_eval.eval['recall'][0][1][0][2], coco_eval.eval['precision'][0][int(f)][1][0][2] ))
 
+    plot_curve(coco_eval,"detr_plot")
 
     print("---Per-Class evaluation---")
 
     DETR_per_class(train_dataset,train_dataloader,device,model,processor)
 
-    plot_curve(coco_eval,"detr_plot")
+    
 
 
     print('----------------------Model evaluation ended--------------------------')
