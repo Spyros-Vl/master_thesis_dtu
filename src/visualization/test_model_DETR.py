@@ -111,7 +111,7 @@ def main():
 
     DETR_per_class(train_dataset,train_dataloader,device,model,processor)
 
-    plot_curve(coco_eval)
+    plot_curve(coco_eval,"detr_plot")
 
 
     print('----------------------Model evaluation ended--------------------------')

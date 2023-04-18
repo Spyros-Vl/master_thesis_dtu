@@ -357,7 +357,7 @@ def testing_step(model,device,validation_dataloader,coco_gt,confidence):
         metrics = coco_eval.stats
         print("The AP value on IoU = 0.5 for class {} is : {:.4f}.\n".format(id2label[catId],metrics[1]))
 
-    plot_curve(coco_eval)
+    plot_curve(coco_eval,"cnn_plot")
 
 
     return metrics[1]
@@ -429,7 +429,7 @@ def validation_step_DETR(model,device,validation_dataset,validation_dataloader,p
     return metrics[1]
 
 
-def plot_curve(coco_eval):
+def plot_curve(coco_eval,filename):
     all_precision = coco_eval.eval['precision']
 
     pr_5 = all_precision[0, :, 0, 0, 2] # data for IoU@0.5
@@ -469,7 +469,9 @@ def plot_curve(coco_eval):
     plt.title("PR-Curve for Text label")
 
     plt.suptitle("PR-Curve")
-    plt.show()
+    plt.savefig('{filename}.png')
+
+
 
 def DETR_per_class(train_dataset,train_dataloader,device,model,processor):
     id2label={0:"text",1:"fracture"}
@@ -502,7 +504,7 @@ def DETR_per_class(train_dataset,train_dataloader,device,model,processor):
                 predictions = {target['image_id'].item(): output for target, output in zip(labels, results)}
                 predictions = prepare_for_coco_detection(predictions)
                 evaluator.update(predictions)
-                if idx == 3 : break
+                
                 
 
             evaluator.synchronize_between_processes()
