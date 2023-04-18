@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 from torch.utils.data import DataLoader
 import torchvision
@@ -24,6 +25,9 @@ from torchvision.models.detection import FasterRCNN
 from torchvision.models.detection.rpn import AnchorGenerator, RPNHead, RegionProposalNetwork
 from torchvision.models.detection.faster_rcnn import *
 import torch
+
+import contextlib
+import io
 
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
@@ -318,16 +322,6 @@ def testing_step(model,device,validation_dataloader,coco_gt,confidence):
     # Load your model's results into the COCOeval object
     coco_dt = coco_gt.loadRes(results)
 
-    # Set the confidence/score threshold
-    confidence_threshold = confidence
-
-    # Filter the predicted bounding boxes based on their confidence/score
-    coco_dt_filtered = []
-    for dt in coco_dt.dataset['annotations']:
-        if dt['score'] >= confidence_threshold:
-            coco_dt_filtered.append(dt)
-    coco_dt.dataset['annotations'] = coco_dt_filtered
-
     # Create a COCOeval object for computing mAP
     coco_eval = COCOeval(coco_gt, coco_dt, iouType='bbox')
 
@@ -342,14 +336,29 @@ def testing_step(model,device,validation_dataloader,coco_gt,confidence):
 
     print('Evaluation metrics: AP = {:.4f}, AP50 = {:.4f}, AP75 = {:.4f}, APs = {:.4f}, APm = {:.4f}, APl = {:.4f}'.format(metrics[0], metrics[1], metrics[2], metrics[3], metrics[4], metrics[5]))
 
+    #print the recall and the precision
+    f = (coco_eval.eval['recall'][0][0][0][2]*100)
+    t = (coco_eval.eval['recall'][0][1][0][2]*100)
+    print("Secondary Evaluation Metrics :\n The AP value on IoU = 0.5 that matters the most is : {:.4f}.\n The Recall of the model for Text label is : {:.4f}. The Precision of the model for Text is : {:.4f}.\n The Recall of the model for Fracture label is : {:.4f}. The Precision of the model for Fracture is : {:.4f}".format(metrics[1], coco_eval.eval['recall'][0][1][0][2], coco_eval.eval['precision'][0][int(t)][1][0][2], coco_eval.eval['recall'][0][0][0][2], coco_eval.eval['precision'][0][int(f)][0][0][2] ))
 
+    id2label = id2label={2:"text",1:"fracture"}
     print('---Per-Class Eval---')
     for catId in coco_gt.getCatIds():
-        print("The metrics for the ",catId)
+        
         coco_eval.params.catIds = [catId]
-        coco_eval.evaluate()
-        coco_eval.accumulate()
-        coco_eval.summarize()
+        
+        # Redirect standard output to a null device
+        with contextlib.redirect_stdout(io.StringIO()):
+            # Call the summarize() function
+            coco_eval.evaluate()
+            coco_eval.accumulate()
+            coco_eval.summarize()
+        # Get the evaluation metrics
+        metrics = coco_eval.stats
+        print("The AP value on IoU = 0.5 for class {} is : {:.4f}.\n".format(id2label[catId],metrics[1]))
+
+    plot_curve(coco_eval)
+
 
     return metrics[1]
 
@@ -418,3 +427,88 @@ def validation_step_DETR(model,device,validation_dataset,validation_dataloader,p
     print('Evaluation metrics: AP = {:.4f}, AP50 = {:.4f}, AP75 = {:.4f}, APs = {:.4f}, APm = {:.4f}, APl = {:.4f}'.format(metrics[0], metrics[1], metrics[2], metrics[3], metrics[4], metrics[5]))
 
     return metrics[1]
+
+
+def plot_curve(coco_eval):
+    all_precision = coco_eval.eval['precision']
+
+    pr_5 = all_precision[0, :, 0, 0, 2] # data for IoU@0.5
+    pr_7 = all_precision[4, :, 0, 0, 2] # data for IoU@0.7
+    pr_9 = all_precision[8, :, 0, 0, 2] # data for IoU@0.9
+
+    x = np.arange(0, 1.01, 0.01)
+
+    plt.figure(figsize=(16,6))
+
+    plt.subplot(1, 2, 1)
+    plt.plot(x, pr_5, label='IoU@0.5')
+    plt.plot(x, pr_7, '--g',label='IoU@0.7')
+    plt.plot(x, pr_9, '--r',label='IoU@0.9')
+    plt.legend(fancybox=True, framealpha=1, shadow=True, borderpad=1)
+    plt.plot([0,1],  [1,1], linestyle='dashed', dashes=(1,3),color='black')
+    plt.plot([1,1],  [0,1], linestyle='dashed', dashes=(1,3),color='black')
+    plt.scatter(coco_eval.eval['recall'][0][0][0][2], coco_eval.eval['precision'][0][int(coco_eval.eval['recall'][0][0][0][2]*100)][0][0][2], label = "Best Trade-off",color = "blue")
+    plt.xlabel("Recall")
+    plt.ylabel("Precision")
+    plt.title("PR-Curve for Fracture label")
+
+    pr_5 = all_precision[0, :, 1, 0, 2] # data for IoU@0.5
+    pr_7 = all_precision[4, :, 1, 0, 2] # data for IoU@0.7
+    pr_9 = all_precision[8, :, 1, 0, 2] # data for IoU@0.9
+
+    plt.subplot(1, 2, 2)
+    plt.plot(x, pr_5, label='IoU@0.5')
+    plt.plot(x, pr_7, '--g',label='IoU@0.7')
+    plt.plot(x, pr_9, '--r',label='IoU@0.9')
+    plt.legend(fancybox=True, framealpha=1, shadow=True, borderpad=1)
+    plt.plot([0,1],  [1,1], linestyle='dashed', dashes=(1,3),color='black')
+    plt.plot([1,1],  [0,1], linestyle='dashed', dashes=(1,3),color='black')
+    plt.scatter(coco_eval.eval['recall'][0][1][0][2], coco_eval.eval['precision'][0][int(coco_eval.eval['recall'][0][1][0][2]*100)][1][0][2], label = "Best Trade-off",color = "blue")
+    plt.xlabel("Recall")
+    plt.ylabel("Precision")
+    plt.title("PR-Curve for Text label")
+
+    plt.suptitle("PR-Curve")
+    plt.show()
+
+def DETR_per_class(train_dataset,train_dataloader,device,model,processor):
+    id2label={0:"text",1:"fracture"}
+    print('---Per-Class Eval---')
+    for catId in train_dataset.coco.getCatIds():
+    
+        # Redirect standard output to a null device
+        with contextlib.redirect_stdout(io.StringIO()):
+            # Call the summarize() function
+            evaluator = CocoEvaluator(coco_gt=train_dataset.coco, iou_types=["bbox"])
+            evaluator.coco_eval['bbox'].params.catIds = [catId]
+
+            print("Running evaluation...")
+            for idx, batch in enumerate(tqdm(train_dataloader)):
+                # get the inputs
+                pixel_values = batch["pixel_values"].to(device)
+                pixel_mask = batch["pixel_mask"].to(device)
+                labels = [{k: v.to(device) for k, v in t.items()} for t in batch["labels"]] # these are in DETR format, resized + normalized
+
+                # forward pass
+                with torch.no_grad():
+                    outputs = model(pixel_values=pixel_values, pixel_mask=pixel_mask)
+
+                # turn into a list of dictionaries (one item for each example in the batch)
+                orig_target_sizes = torch.stack([target["orig_size"] for target in labels], dim=0)
+                results = processor.post_process_object_detection(outputs, target_sizes=orig_target_sizes)
+                # provide to metric
+                # metric expects a list of dictionaries, each item 
+                # containing image_id, category_id, bbox and score keys 
+                predictions = {target['image_id'].item(): output for target, output in zip(labels, results)}
+                predictions = prepare_for_coco_detection(predictions)
+                evaluator.update(predictions)
+                if idx == 3 : break
+                
+
+            evaluator.synchronize_between_processes()
+            evaluator.accumulate()
+            evaluator.summarize()
+        # Get the evaluation metrics
+        coco_eval = evaluator.coco_eval['bbox']
+        metrics = coco_eval.stats
+        print("The AP value on IoU = 0.5 for class {} is : {:.4f}.\n".format(id2label[catId],metrics[1]))
