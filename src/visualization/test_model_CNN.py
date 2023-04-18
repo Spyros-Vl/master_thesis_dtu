@@ -41,7 +41,7 @@ def main():
     BatchSize = 1
     num_workers =4
 
-    score_threshold = 0.8
+    score_threshold = 0.5
     iou_threshold = 0.5
 
     #load test data
@@ -52,7 +52,7 @@ def main():
 
     #load the model state
     model = get_model_instance_segmentation(3)
-    best_model = torch.load(f'CNN_Model.pt')
+    best_model = torch.load(f'Best_val_CNN_Model.pt')
     model.load_state_dict(best_model['model_state_dict'])
 
     model.to(device)

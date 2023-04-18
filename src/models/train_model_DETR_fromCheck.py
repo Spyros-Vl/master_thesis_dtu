@@ -148,7 +148,7 @@ def main(best_loss):
                 'optimizer_state_dict': optimizer.state_dict(),
                 'best_loss': best_loss
             }
-            torch.save(checkpoint,f'DETR_Model.pt')
+            torch.save(checkpoint,f'Best_val_DETR_Model.pt')
             print("Model state saved on epoch: ", (epoch+1))
 
     wandb.finish()

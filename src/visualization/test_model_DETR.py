@@ -58,7 +58,7 @@ def main():
                                                                 ignore_mismatched_sizes=True) 
                                                                 
     model = DetrForObjectDetection(config)
-    best_model = torch.load(f'DETR_Model.pt',map_location=torch.device('cpu'))
+    best_model = torch.load(f'Best_val_DETR_Model.pt',map_location=torch.device('cpu'))
     model.load_state_dict(best_model['model_state_dict'])
     print("The model best AP score with IoU = 0.5 in validation set was : ",best_model['best_loss'])
 
