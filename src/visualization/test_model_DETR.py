@@ -89,9 +89,21 @@ def main():
         results = processor.post_process_object_detection(outputs, target_sizes=orig_target_sizes)
         # provide to metric
         # metric expects a list of dictionaries, each item 
-        # containing image_id, category_id, bbox and score keys 
-        predictions = {target['image_id'].item(): output for target, output in zip(labels, results)}
-        predictions = prepare_for_coco_detection(predictions)
+        # containing image_id, category_id, bbox and score keys
+        if results[0]['boxes'].numel() == 0:
+            empty_ann = {
+                    'image_id': labels[0]['image_id'].item(),
+                    'category_id': 0, # replace with the appropriate category_id for your dataset
+                    'bbox': [0, 0, 0, 0],
+                    'score': 0.0
+            }
+            results[0]['boxes'] = torch.tensor([[0, 0, 0, 0]], device=device)
+            results[0]['labels'] = torch.tensor([0], device=device)
+            results[0]['scores'] = torch.tensor([0.0], device=device)
+            predictions = {labels[0]['image_id'].item(): empty_ann}
+        else:
+            predictions = {target['image_id'].item(): output for target, output in zip(labels, results)}
+            predictions = prepare_for_coco_detection(predictions)
         evaluator.update(predictions)
         
 
