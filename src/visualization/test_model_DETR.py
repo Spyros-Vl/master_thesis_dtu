@@ -58,7 +58,7 @@ def main():
                                                                 ignore_mismatched_sizes=True) 
                                                                 
     model = DetrForObjectDetection(config)
-    best_model = torch.load(f'Best_val_DETR_Model.pt',map_location=torch.device('cpu'))
+    best_model = torch.load(f'Last_DETR_Model.pt',map_location=torch.device('cpu'))
     model.load_state_dict(best_model['model_state_dict'])
     print("The model best AP score with IoU = 0.5 in validation set was : ",best_model['best_loss'])
 
@@ -86,7 +86,7 @@ def main():
 
         # turn into a list of dictionaries (one item for each example in the batch)
         orig_target_sizes = torch.stack([target["orig_size"] for target in labels], dim=0)
-        results = processor.post_process_object_detection(outputs, target_sizes=orig_target_sizes)
+        results = processor.post_process_object_detection(outputs, target_sizes=orig_target_sizes,threshold=0.5)
         # provide to metric
         # metric expects a list of dictionaries, each item 
         # containing image_id, category_id, bbox and score keys
