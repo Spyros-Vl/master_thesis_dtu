@@ -407,12 +407,15 @@ def validation_step_DETR(model,device,validation_dataset,validation_dataloader,p
         results = processor.post_process_object_detection(outputs, target_sizes=orig_target_sizes)
 
         if results[0]['boxes'].numel() == 0:
-            print("Validation skipped")
-            return 0
+            empty_ann = {'scores': torch.tensor([0.0]), 
+              'labels': torch.tensor([0]), 
+              'boxes': torch.tensor([[0.0, 0.0, 0.0, 0.0]])}
+            predictions = {labels[0]['image_id'].item(): empty_ann}
+        else:
+            predictions = {target['image_id'].item(): output for target, output in zip(labels, results)}
         # provide to metric
         # metric expects a list of dictionaries, each item 
         # containing image_id, category_id, bbox and score keys 
-        predictions = {target['image_id'].item(): output for target, output in zip(labels, results)}
         predictions = prepare_for_coco_detection(predictions)
         evaluator.update(predictions)
 
