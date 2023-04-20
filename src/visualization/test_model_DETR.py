@@ -90,13 +90,34 @@ def main():
         # provide to metric
         # metric expects a list of dictionaries, each item 
         # containing image_id, category_id, bbox and score keys
-        if results[0]['boxes'].numel() == 0:
+        #Apply the nms function to the boxes 
+        nms_results = []
+        for result in results:
+            # Get the boxes, scores, and labels from the current dictionary
+            boxes = result['boxes']
+            scores = result['scores']
+            pred_labels = result['labels']
+            
+            # Apply NMS to the boxes
+            keep = torchvision.ops.nms(boxes, scores, iou_threshold=0.5)
+            
+            # Create a new dictionary with the NMS-filtered boxes
+            result_nms = {}
+            result_nms['scores'] = scores[keep]
+            result_nms['labels'] = pred_labels[keep]
+            result_nms['boxes'] = boxes[keep]
+            
+            # Append the new dictionary to the `nms_results` list
+            nms_results.append(result_nms)
+
+        #in case no box predicted    
+        if result_nms[0]['boxes'].numel() == 0:
             empty_ann = {'scores': torch.tensor([0.0]), 
               'labels': torch.tensor([0]), 
               'boxes': torch.tensor([[0.0, 0.0, 0.0, 0.0]])}
             predictions = {labels[0]['image_id'].item(): empty_ann}
         else:
-            predictions = {target['image_id'].item(): output for target, output in zip(labels, results)}
+            predictions = {target['image_id'].item(): output for target, output in zip(labels, result_nms)}
         predictions = prepare_for_coco_detection(predictions)
         evaluator.update(predictions)
         

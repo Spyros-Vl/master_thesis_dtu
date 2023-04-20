@@ -4,6 +4,8 @@ from torch.utils.data import DataLoader
 import torchvision
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
+from torchvision.ops import nms
+
 
 from cv2 import cv2
 import os
@@ -305,18 +307,23 @@ def testing_step(model,device,validation_dataloader,coco_gt,confidence):
             targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
             outputs = model(images)
             for i, output in enumerate(outputs):
-                boxes = output['boxes'].cpu().numpy()
-                scores = output['scores'].cpu().numpy()
-                labels = output['labels'].cpu().numpy()
-                image_id = targets[0]['image_id'].cpu().numpy()
-                for box, score, label in zip(boxes, scores, labels):
-                    if score > confidence :
-                        results.append({
-                            'image_id': image_id[0],
-                            'category_id': label,
-                            'bbox': [box[0], box[1], box[2] - box[0], box[3] - box[1]],
-                            'score': score
-                        })
+                boxes = output['boxes'].cpu()
+            scores = output['scores'].cpu()
+            labels = output['labels'].cpu()
+            image_id = targets[0]['image_id'].cpu().numpy()
+            #Apply the NMS function to my boxes
+            keep = nms(boxes, scores, iou_threshold=0.5)
+            boxes = boxes[keep]
+            scores = scores[keep]
+            labels = labels[keep]
+            for box, score, label in zip(boxes, scores, labels):
+                if score > confidence :
+                    results.append({
+                        'image_id': image_id[0].item(),
+                        'category_id': label.item(),
+                        'bbox': [box[0].item(), box[1].item(), (box[2]-box[0]).item(), (box[3]-box[1]).item()],
+                        'score': score.item()
+                    })
 
     
     # Load your model's results into the COCOeval object
