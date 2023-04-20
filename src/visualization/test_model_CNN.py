@@ -103,11 +103,8 @@ def main():
     coco_gt.dataset = coco_gt_data
     coco_gt.createIndex()
 
-    print('Results with confidence = 0.9')
-    validation_loss = testing_step(model,device,test_dataloader,coco_gt,0.9)
-
-    print('Results with confidence = 0.5')
-    validation_loss = testing_step(model,device,test_dataloader,coco_gt,0.5)
+    print('Results with confidence = 0.7')
+    validation_loss = testing_step(model,device,test_dataloader,coco_gt,0.7)
 
 
 
