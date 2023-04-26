@@ -66,6 +66,8 @@ def main():
     
     model.eval()
 
+    model.eval()
+
 
     print('----------------------Model evaluation started--------------------------')
 
