@@ -31,4 +31,4 @@ nvidia-smi
 module load cuda/11.7
 
 ~/miniconda3/envs/hpc_env/bin/python \
-src/models/train_model_DETR_fromCheck.py --best_loss 0.8097
+src/models/train_model_DETR_fromCheck.py --best_loss 0.8462

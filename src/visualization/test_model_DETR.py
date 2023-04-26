@@ -63,6 +63,8 @@ def main():
     print("The model best AP score with IoU = 0.7 in validation set was : ",best_model['best_loss'])
 
     model.to(device)
+    
+    model.eval()
 
 
     print('----------------------Model evaluation started--------------------------')
@@ -111,13 +113,13 @@ def main():
             nms_results.append(result_nms)
 
         #in case no box predicted    
-        if result_nms[0]['boxes'].numel() == 0:
+        if nms_results[0]['boxes'].numel() == 0:
             empty_ann = {'scores': torch.tensor([0.0]), 
               'labels': torch.tensor([0]), 
               'boxes': torch.tensor([[0.0, 0.0, 0.0, 0.0]])}
             predictions = {labels[0]['image_id'].item(): empty_ann}
         else:
-            predictions = {target['image_id'].item(): output for target, output in zip(labels, result_nms)}
+            predictions = {target['image_id'].item(): output for target, output in zip(labels, nms_results)}
         predictions = prepare_for_coco_detection(predictions)
         evaluator.update(predictions)
         
