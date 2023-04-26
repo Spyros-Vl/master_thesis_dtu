@@ -37,9 +37,9 @@ def main():
 
     #defines
     NumOfClasses = 3 
-    NumOfEpochs = 300
-    BatchSize = 32
-    num_workers = 8
+    NumOfEpochs = 10
+    BatchSize = 16
+    num_workers = 6
 
     #SET Weights & Biases
     wandb.init(
