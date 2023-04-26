@@ -84,7 +84,7 @@ def main():
 
     #load the validation coco dataset for the eval
     # Load the COCO object from a JSON file
-    with open('coco_gt.json', 'r') as f:
+    with open('coco_gt_multiview.json', 'r') as f:
         coco_gt_data = json.load(f)
     coco_gt = COCO()
     coco_gt.dataset = coco_gt_data
@@ -123,7 +123,7 @@ def main():
                 'optimizer_state_dict': optimizer.state_dict(),
                 'best_loss': best_loss
             }
-            torch.save(checkpoint,f'Best_val_CNN_Model.pt')
+            torch.save(checkpoint,f'Best_val_MultiView_CNN_Model.pt')
             print("Model state saved on epoch: ", (epoch+1))
 
 
@@ -138,7 +138,7 @@ def main():
         'optimizer_state_dict': optimizer.state_dict(),
         'best_loss': best_loss
     }
-    torch.save(checkpoint,f'Last_CNN_Model.pt')
+    torch.save(checkpoint,f'Last_MultiView_CNN_Model.pt')
     print("Model state saved on epoch: ", (epoch+1))
 
 
