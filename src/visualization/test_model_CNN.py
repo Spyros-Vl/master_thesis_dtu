@@ -42,7 +42,7 @@ def main():
     num_workers =4
 
     score_threshold = 0.5
-    iou_threshold = 0.5
+    iou_threshold = 0.7
 
     #load test data
     test_dataset = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/test_pickles'))
