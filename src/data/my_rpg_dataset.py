@@ -139,6 +139,33 @@ class CocoDetection(torchvision.datasets.CocoDetection):
         target = encoding["labels"][0] # remove batch dimension
 
         return pixel_values, target
+    
+class MultiViewCocoDetection(torchvision.datasets.CocoDetection):
+    def __init__(self, path_folder, processor, status="train"):
+        if status == "train":
+            ann_file = os.path.join(path_folder, "train_multi_coco_data.json")
+        elif status == "validation":
+            ann_file = os.path.join(path_folder, "val_multi_coco_data.json")
+        elif status == "test":
+            ann_file = os.path.join(path_folder, "test_multi_coco_data.json")
+        else:
+            raise ValueError("Invalid value for status. Expected 'train', 'validation', or 'test'.")
+        super(CocoDetection, self).__init__(path_folder, ann_file)
+        self.processor = processor
+
+    def __getitem__(self, idx):
+        # read in PIL image and target in COCO format
+        # feel free to add data augmentation here before passing them to the next step
+        img, target = super(CocoDetection, self).__getitem__(idx)
+        
+        # preprocess image and target (converting target to DETR format, resizing + normalization of both image and target)
+        image_id = self.ids[idx]
+        target = {'image_id': image_id, 'annotations': target}
+        encoding = self.processor(images=img, annotations=target, return_tensors="pt")
+        pixel_values = encoding["pixel_values"].squeeze() # remove batch dimension
+        target = encoding["labels"][0] # remove batch dimension
+
+        return pixel_values, target
 
 
 def collate_fn_COCO(batch):
