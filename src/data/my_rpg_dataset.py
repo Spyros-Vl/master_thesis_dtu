@@ -150,7 +150,7 @@ class MultiViewCocoDetection(torchvision.datasets.CocoDetection):
             ann_file = os.path.join(path_folder, "test_multi_coco_data.json")
         else:
             raise ValueError("Invalid value for status. Expected 'train', 'validation', or 'test'.")
-        super(CocoDetection, self).__init__(path_folder, ann_file)
+        super(MultiViewCocoDetection, self).__init__(path_folder, ann_file)
         self.processor = processor
 
     def __getitem__(self, idx):
