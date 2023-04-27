@@ -123,7 +123,7 @@ def main():
             validation_loss = validation_step_DETR(model,device,validation_dataset,validation_dataloader,processor)
             val_loss.append(validation_loss)
             
-        wandb.log({'epoch': epoch+1,"training_loss": epoch_loss,"validation_loss": val_loss})
+        wandb.log({'epoch': epoch+1,"training_loss": epoch_loss,"validation_loss": validation_loss})
 
         train_loss.append(epoch_loss)
 
