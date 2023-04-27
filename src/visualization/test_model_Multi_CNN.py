@@ -45,14 +45,14 @@ def main():
     iou_threshold = 0.5
 
     #load test data
-    test_dataset = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/test_pickles'))
+    test_dataset = XRayDataSet(pathlib.Path('s213160/test_pickles_mix'))
     test_dataloader = DataLoader(test_dataset, batch_size=BatchSize, shuffle=False, num_workers=num_workers,collate_fn=collate_fn)
 
 
 
     #load the model state
     model = get_model_instance_segmentation(3)
-    best_model = torch.load(f'Best_val_CNN_Model.pt')
+    best_model = torch.load(f'Best_val_MultiView_CNN_Model.pt')
     model.load_state_dict(best_model['model_state_dict'])
 
     model.to(device)
@@ -97,7 +97,7 @@ def main():
 
     #load the test coco dataset for the eval
     # Load the COCO object from a JSON file
-    with open('test_coco_gt.json', 'r') as f:
+    with open('multiview_test_coco_gt.json', 'r') as f:
         coco_gt_data = json.load(f)
     coco_gt = COCO()
     coco_gt.dataset = coco_gt_data

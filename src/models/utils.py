@@ -251,6 +251,7 @@ def train_one_epoch(model,training_dataloader,device,optimizer):
 
         optimizer.zero_grad()
         losses.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1)
         optimizer.step()
         epoch_loss += losses
         
@@ -259,23 +260,30 @@ def train_one_epoch(model,training_dataloader,device,optimizer):
 def validation_step(model,device,validation_dataloader,coco_gt):
 
     model.eval()
-    results = [] 
+    results = []
+    confidence = 0.7
     with torch.no_grad():
         for images, targets in tqdm(validation_dataloader):
             images = list(img.to(device) for img in images)
             targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
             outputs = model(images)
             for i, output in enumerate(outputs):
-                boxes = output['boxes'].cpu().numpy()
-                scores = output['scores'].cpu().numpy()
-                labels = output['labels'].cpu().numpy()
-                image_id = targets[0]['image_id'].cpu().numpy()
-                for box, score, label in zip(boxes, scores, labels):
+                boxes = output['boxes'].cpu()
+            scores = output['scores'].cpu()
+            labels = output['labels'].cpu()
+            image_id = targets[0]['image_id'].cpu().numpy()
+            #Apply the NMS function to my boxes
+            keep = nms(boxes, scores, iou_threshold=0.5)
+            boxes = boxes[keep]
+            scores = scores[keep]
+            labels = labels[keep]
+            for box, score, label in zip(boxes, scores, labels):
+                if score > confidence :
                     results.append({
-                        'image_id': image_id[0],
-                        'category_id': label,
-                        'bbox': [box[0], box[1], box[2] - box[0], box[3] - box[1]],
-                        'score': score
+                        'image_id': image_id[0].item(),
+                        'category_id': label.item(),
+                        'bbox': [box[0].item(), box[1].item(), (box[2]-box[0]).item(), (box[3]-box[1]).item()],
+                        'score': score.item()
                     })
 
     # Load your model's results into the COCOeval object
@@ -411,18 +419,35 @@ def validation_step_DETR(model,device,validation_dataset,validation_dataloader,p
 
         # turn into a list of dictionaries (one item for each example in the batch)
         orig_target_sizes = torch.stack([target["orig_size"] for target in labels], dim=0)
-        results = processor.post_process_object_detection(outputs, target_sizes=orig_target_sizes)
+        results = processor.post_process_object_detection(outputs, target_sizes=orig_target_sizes,threshold=0.7)
 
-        if results[0]['boxes'].numel() == 0:
+        nms_results = []
+        for result in results:
+            # Get the boxes, scores, and labels from the current dictionary
+            boxes = result['boxes']
+            scores = result['scores']
+            pred_labels = result['labels']
+            
+            # Apply NMS to the boxes
+            keep = torchvision.ops.nms(boxes, scores, iou_threshold=0.5)
+            
+            # Create a new dictionary with the NMS-filtered boxes
+            result_nms = {}
+            result_nms['scores'] = scores[keep]
+            result_nms['labels'] = pred_labels[keep]
+            result_nms['boxes'] = boxes[keep]
+            
+            # Append the new dictionary to the `nms_results` list
+            nms_results.append(result_nms)
+
+        #in case no box predicted    
+        if nms_results[0]['boxes'].numel() == 0:
             empty_ann = {'scores': torch.tensor([0.0]), 
               'labels': torch.tensor([0]), 
               'boxes': torch.tensor([[0.0, 0.0, 0.0, 0.0]])}
             predictions = {labels[0]['image_id'].item(): empty_ann}
         else:
-            predictions = {target['image_id'].item(): output for target, output in zip(labels, results)}
-        # provide to metric
-        # metric expects a list of dictionaries, each item 
-        # containing image_id, category_id, bbox and score keys 
+            predictions = {target['image_id'].item(): output for target, output in zip(labels, nms_results)} 
         predictions = prepare_for_coco_detection(predictions)
         evaluator.update(predictions)
 
@@ -509,11 +534,35 @@ def DETR_per_class(train_dataset,train_dataloader,device,model,processor):
 
                 # turn into a list of dictionaries (one item for each example in the batch)
                 orig_target_sizes = torch.stack([target["orig_size"] for target in labels], dim=0)
-                results = processor.post_process_object_detection(outputs, target_sizes=orig_target_sizes)
-                # provide to metric
-                # metric expects a list of dictionaries, each item 
-                # containing image_id, category_id, bbox and score keys 
-                predictions = {target['image_id'].item(): output for target, output in zip(labels, results)}
+                results = processor.post_process_object_detection(outputs, target_sizes=orig_target_sizes,threshold = 0.7)
+                
+                nms_results = []
+                for result in results:
+                    # Get the boxes, scores, and labels from the current dictionary
+                    boxes = result['boxes']
+                    scores = result['scores']
+                    pred_labels = result['labels']
+                    
+                    # Apply NMS to the boxes
+                    keep = torchvision.ops.nms(boxes, scores, iou_threshold=0.5)
+                    
+                    # Create a new dictionary with the NMS-filtered boxes
+                    result_nms = {}
+                    result_nms['scores'] = scores[keep]
+                    result_nms['labels'] = pred_labels[keep]
+                    result_nms['boxes'] = boxes[keep]
+                    
+                    # Append the new dictionary to the `nms_results` list
+                    nms_results.append(result_nms)
+
+                #in case no box predicted    
+                if nms_results[0]['boxes'].numel() == 0:
+                    empty_ann = {'scores': torch.tensor([0.0]), 
+                    'labels': torch.tensor([0]), 
+                    'boxes': torch.tensor([[0.0, 0.0, 0.0, 0.0]])}
+                    predictions = {labels[0]['image_id'].item(): empty_ann}
+                else:
+                    predictions = {target['image_id'].item(): output for target, output in zip(labels, nms_results)}
                 predictions = prepare_for_coco_detection(predictions)
                 evaluator.update(predictions)
                 

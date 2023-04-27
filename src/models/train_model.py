@@ -48,9 +48,10 @@ def main():
         
         # track hyperparameters and run metadata
         config={
-        "learning_rate": 0.005,
+        "learning_rate": 0.001,
         "momentum": 0.9,
         "weight_decay": 0.0005,
+        "Gradient_clip": 1,
         "architecture": "FastRCNN TorchVision",
         "dataset": "Pediatric wrist trauma X-ray",
         "epochs": NumOfEpochs,
@@ -75,7 +76,7 @@ def main():
     params = [p for p in model.parameters() if p.requires_grad]
     #optimizer = torch.optim.AdamW(params, lr=0.005, betas=(0.9, 0.999), weight_decay=0.0005)
 
-    optimizer = torch.optim.SGD(params, lr=0.005,momentum=0.9, weight_decay=0.0005)
+    optimizer = torch.optim.SGD(params, lr=0.001,momentum=0.9, weight_decay=0.0005)
 
     train_loss = []
     val_loss = []
