@@ -156,7 +156,7 @@ class MultiViewCocoDetection(torchvision.datasets.CocoDetection):
     def __getitem__(self, idx):
         # read in PIL image and target in COCO format
         # feel free to add data augmentation here before passing them to the next step
-        img, target = super(CocoDetection, self).__getitem__(idx)
+        img, target = super(MultiViewCocoDetection, self).__getitem__(idx)
         
         # preprocess image and target (converting target to DETR format, resizing + normalization of both image and target)
         image_id = self.ids[idx]
