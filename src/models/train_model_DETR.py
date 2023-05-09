@@ -52,7 +52,7 @@ def main():
     NumOfClasses = 2 
     NumOfEpochs = 50
     BatchSize = 32
-    num_workers = 8
+    num_workers = 5
     checkpoint = "facebook/detr-resnet-50"
 
     #SET Weights & Biases

@@ -52,7 +52,7 @@ def main():
 
     #load the model state
     model = get_model_instance_segmentation(3)
-    best_model = torch.load(f'Best_val_CNN_Model.pt')
+    best_model = torch.load(f'Last_CNN_Model.pt')
     model.load_state_dict(best_model['model_state_dict'])
 
     model.to(device)
