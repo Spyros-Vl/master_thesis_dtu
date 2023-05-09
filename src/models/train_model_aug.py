@@ -38,7 +38,7 @@ def main():
 
     #defines
     NumOfClasses = 3 
-    NumOfEpochs = 50
+    NumOfEpochs = 150
     BatchSize = 32
     num_workers = 5
 
@@ -49,7 +49,7 @@ def main():
         
         # track hyperparameters and run metadata
         config={
-        "learning_rate": 0.01,
+        "learning_rate": 0.005,
         "momentum": 0.9,
         "weight_decay": 0.0005,
         "Gradient_clip": 1,
@@ -83,7 +83,7 @@ def main():
     params = [p for p in model.parameters() if p.requires_grad]
     #optimizer = torch.optim.AdamW(params, lr=0.005, betas=(0.9, 0.999), weight_decay=0.0005)
 
-    optimizer = torch.optim.SGD(params, lr=0.01,momentum=0.9, weight_decay=0.0005)
+    optimizer = torch.optim.SGD(params, lr=0.005,momentum=0.9, weight_decay=0.0005)
 
     train_loss = []
     val_loss = []
@@ -131,7 +131,7 @@ def main():
                 'optimizer_state_dict': optimizer.state_dict(),
                 'best_loss': best_loss
             }
-            torch.save(checkpoint,f'Best_val_CNN_Model.pt')
+            torch.save(checkpoint,f'Best_val_CNN_Model_aug.pt')
             print("Model state saved on epoch: ", (epoch+1))
 
 
@@ -146,7 +146,7 @@ def main():
         'optimizer_state_dict': optimizer.state_dict(),
         'best_loss': best_loss
     }
-    torch.save(checkpoint,f'Last_CNN_Model.pt')
+    torch.save(checkpoint,f'Last_CNN_Model_aug.pt')
     print("Model state saved on epoch: ", (epoch+1))
 
 
