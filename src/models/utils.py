@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from torchvision.ops import nms
 
 
-from cv2 import cv2
+import cv2
 import os
 import json
 import time

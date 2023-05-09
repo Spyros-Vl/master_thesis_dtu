@@ -43,3 +43,5 @@ kill:
 #run job file
 test:
 	bsub < test_jobscript.sh
+
+#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

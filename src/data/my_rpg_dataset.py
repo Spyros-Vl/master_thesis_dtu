@@ -11,7 +11,7 @@ import pickle
 import torchvision
 from transformers import DetrImageProcessor
 import torchvision.transforms as T
-from cv2 import cv2
+import cv2
 
 
 class XRayDataSet(torch.utils.data.Dataset):
@@ -48,6 +48,65 @@ class XRayDataSet(torch.utils.data.Dataset):
 
 
         return img, target
+
+class XRayDataSet_aug(torch.utils.data.Dataset):
+    
+
+     def __init__(self, root,transform):
+         
+        self.root = root
+        self.instances = list(sorted(os.listdir(root)))
+        self.transform = transform
+        
+
+    
+     def __len__(self):
+        return len(self.instances) 
+
+     def __getitem__(self,idx):
+        
+        instance = os.path.join(self.root, self.instances[idx])
+        
+
+        with open(instance, 'rb') as handle:
+            data = pickle.load(handle)
+
+        img_path = data['image']
+        linux_path = os.path.join(*img_path.split('\\'))
+        #for linux to work
+        start_dir = '../'
+        img_path = os.path.relpath(linux_path, start_dir)
+        #
+
+        img = cv2.imread(img_path)
+        target = data['target']
+
+        transformed = self.transform(image=img, bboxes=target['boxes'].detach().cpu().numpy(), class_labels=target['labels'].detach().cpu().numpy())
+
+        transformed_image = transformed['image']
+        transformed_bboxes = transformed['bboxes']
+        transformed_class_labels = transformed['class_labels']
+
+        d = {}
+
+        boxes = torch.FloatTensor(transformed_bboxes)
+        labels = torch.as_tensor(transformed_class_labels, dtype=torch.int64)
+                
+        
+        d["boxes"] = boxes
+        d["labels"] = labels
+        d["image_id"] = target["image_id"]
+        d["area"] = target['area']
+
+        
+
+        target = d
+
+
+        img = T.ToTensor()(transformed_image).float()
+
+
+        return img, target
      
 class XRayDataSet_windows(torch.utils.data.Dataset):
     
@@ -56,6 +115,7 @@ class XRayDataSet_windows(torch.utils.data.Dataset):
          
          self.root = root
          self.instances = list(sorted(os.listdir(root)))
+         
          
 
       
@@ -77,8 +137,67 @@ class XRayDataSet_windows(torch.utils.data.Dataset):
          img = T.ToTensor()(img).float()
          target = data['target']
 
+         
+
 
          return img, target
+      
+class XRayDataSet_windows_transform(torch.utils.data.Dataset):
+    
+
+      def __init__(self, root,transform):
+         
+         self.root = root
+         self.instances = list(sorted(os.listdir(root)))
+         self.transform = transform
+         
+         
+
+      
+      def __len__(self):
+         return len(self.instances) 
+
+      def __getitem__(self,idx):
+         
+        instance = os.path.join(self.root, self.instances[idx])
+         
+
+        with open(instance, 'rb') as handle:
+            data = pickle.load(handle)
+
+        img_path = data['image']
+        linux_path = os.path.join(*img_path.split('\\'))
+
+        img = cv2.imread(img_path)
+        target = data['target']
+         
+        transformed = self.transform(image=img, bboxes=target['boxes'].detach().cpu().numpy(), class_labels=target['labels'].detach().cpu().numpy())
+
+        transformed_image = transformed['image']
+        transformed_bboxes = transformed['bboxes']
+        transformed_class_labels = transformed['class_labels']
+
+        d = {}
+
+        boxes = torch.FloatTensor(transformed_bboxes)
+        labels = torch.as_tensor(transformed_class_labels, dtype=torch.int64)
+                
+        
+        d["boxes"] = boxes
+        d["labels"] = labels
+        d["image_id"] = target["image_id"]
+        d["area"] = target['area']
+
+        
+
+        target = d
+
+
+        img = T.ToTensor()(transformed_image).float()
+
+
+        return img, target
+      
 class XRayDataSet_coco(torch.utils.data.Dataset):
     
 

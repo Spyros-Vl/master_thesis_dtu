@@ -91,6 +91,9 @@ target/
 #My files
 
 literature/Other
+models/CNN*
+models/DETR*
+models/old models
 
 #wandb
 wandb
