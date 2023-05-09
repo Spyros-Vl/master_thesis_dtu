@@ -73,7 +73,7 @@ def main():
     training_dataloader = DataLoader(train_dataset, batch_size=BatchSize, shuffle=True, num_workers=num_workers,collate_fn=collate_fn)
 
     #load validation data
-    validation_dataset = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/validation_pickles'))
+    validation_dataset = XRayDataSet(pathlib.Path('literature/Other/supervisely/wrist/validation_pickles'),transform=transform)
     validation_dataloader = DataLoader(validation_dataset, batch_size=1, shuffle=False, num_workers=4,collate_fn=collate_fn)
 
     #load the model
