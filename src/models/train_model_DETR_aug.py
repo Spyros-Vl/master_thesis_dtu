@@ -1,4 +1,4 @@
-from cv2 import cv2
+import cv2
 import os
 import json
 import time
@@ -52,8 +52,8 @@ def main():
 
     #defines
     NumOfClasses = 2 
-    NumOfEpochs = 50
-    BatchSize = 32
+    NumOfEpochs = 100
+    BatchSize = 16
     num_workers = 5
     checkpoint = "facebook/detr-resnet-50"
 
@@ -103,7 +103,7 @@ def main():
                  "lr": 1e-5,
             },
     ]
-    optimizer = torch.optim.AdamW(param_dicts, lr=1e-4,weight_decay=1e-4)
+    optimizer = torch.optim.AdamW(param_dicts, lr=1e-5,weight_decay=1e-4)
    
 
     train_loss = []
