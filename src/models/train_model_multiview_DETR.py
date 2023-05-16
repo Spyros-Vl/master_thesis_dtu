@@ -1,4 +1,4 @@
-from cv2 import cv2
+import cv2
 import os
 import json
 import time
@@ -50,9 +50,9 @@ def main():
 
     #defines
     NumOfClasses = 2 
-    NumOfEpochs = 5
-    BatchSize = 32
-    num_workers = 8
+    NumOfEpochs = 50
+    BatchSize = 16
+    num_workers = 5
     checkpoint = "facebook/detr-resnet-50"
 
     #SET Weights & Biases

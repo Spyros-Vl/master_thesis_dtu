@@ -3,7 +3,7 @@
 ### –- specify queue --
 #BSUB -q gpua100
 ### -- set the job Name --
-#BSUB -J DETR_multi
+#BSUB -J DETR_mult
 ### -- ask for number of cores (default: 1) --
 #BSUB -n 5
 ### -- Select the resources: 1 gpu in exclusive process mode --

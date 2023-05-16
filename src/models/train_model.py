@@ -1,4 +1,4 @@
-from cv2 import cv2
+import cv2
 import os
 import json
 import time
@@ -38,7 +38,7 @@ def main():
     #defines
     NumOfClasses = 3 
     NumOfEpochs = 50
-    BatchSize = 32
+    BatchSize = 16
     num_workers = 5
 
     #SET Weights & Biases
