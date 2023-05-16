@@ -249,6 +249,7 @@ class CocoDetection(torchvision.datasets.CocoDetection):
         # read in PIL image and target in COCO format
         # feel free to add data augmentation here before passing them to the next step
         img, target = super(CocoDetection, self).__getitem__(idx)
+
         
         # preprocess image and target (converting target to DETR format, resizing + normalization of both image and target)
         image_id = self.ids[idx]
@@ -286,7 +287,65 @@ class MultiViewCocoDetection(torchvision.datasets.CocoDetection):
 
         return pixel_values, target
 
+class CocoDetection_aug(torchvision.datasets.CocoDetection):
+    def __init__(self, path_folder, processor, transform, status="train"):
+        if status == "train":
+            ann_file = os.path.join(path_folder, "train_coco_data.json")
+        elif status == "validation":
+            ann_file = os.path.join(path_folder, "val_coco_data.json")
+        elif status == "test":
+            ann_file = os.path.join(path_folder, "test_coco_data.json")
+        else:
+            raise ValueError("Invalid value for status. Expected 'train', 'validation', or 'test'.")
+        super(CocoDetection_aug, self).__init__(path_folder, ann_file)
+        self.processor = processor
+        self.transform = transform
 
+    def __getitem__(self, idx):
+        # read in PIL image and target in COCO format
+        # feel free to add data augmentation here before passing them to the next step
+        img, target = super(CocoDetection_aug, self).__getitem__(idx)
+
+        img = np.array(img)
+
+        # Extract bounding boxes and labels from the annotations
+        bboxes = []
+        class_labels = []
+        for annotation in target:
+            bboxes.append(annotation['bbox'])
+            class_labels.append(annotation['category_id'])
+
+        # Perform augmentation
+        transformed= self.transform(image=img, bboxes=bboxes, class_labels=class_labels)
+        augmented_image = transformed['image']
+        augmented_bboxes = transformed['bboxes']
+        augmented_labels = transformed['class_labels']
+
+        img = Image.fromarray(augmented_image)
+
+        # Update the target with augmented bounding boxes and labels
+        augmented_target = []
+        for bbox, label in zip(augmented_bboxes, augmented_labels):
+            augmented_annotation = {
+                'id': len(augmented_target),
+                'image_id': target[0]['image_id'],
+                'category_id': label,
+                'bbox': bbox,
+                'area': bbox[2] * bbox[3],
+                'segmentation': [],
+                'iscrowd': 0
+            }
+            augmented_target.append(augmented_annotation)
+
+        # Preprocess image and target (converting target to DETR format, resizing + normalization of both image and target)
+        image_id = self.ids[idx]
+        target = {'image_id': image_id, 'annotations': augmented_target}
+        encoding = self.processor(images=img, annotations=target, return_tensors="pt")
+        pixel_values = encoding["pixel_values"].squeeze()  # remove batch dimension
+        target = encoding["labels"][0]  # remove batch dimension
+
+        return pixel_values, target
+    
 def collate_fn_COCO(batch):
 
    checkpoint = "facebook/detr-resnet-50"    
