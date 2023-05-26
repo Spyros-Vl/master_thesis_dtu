@@ -3,7 +3,7 @@
 ### –- specify queue --
 #BSUB -q gpua100
 ### -- set the job Name --
-#BSUB -J DETR_aug
+#BSUB -J DETR_4
 ### -- ask for number of cores (default: 1) --
 #BSUB -n 5
 ### -- Select the resources: 1 gpu in exclusive process mode --
@@ -31,4 +31,4 @@ nvidia-smi
 module load cuda/11.7
 
 ~/miniconda3/envs/hpc_env/bin/python \
-src/models/train_model_DETR_aug.py
+src/models/train_model_DETR_fromCheck.py --best_loss 0.845

@@ -52,7 +52,7 @@ def main():
 
     #defines
     NumOfClasses = 2 
-    NumOfEpochs = 5
+    NumOfEpochs = 100
     BatchSize = 16
     num_workers = 5
     checkpoint = "microsoft/conditional-detr-resnet-50"
@@ -141,7 +141,7 @@ def main():
                 'optimizer_state_dict': optimizer.state_dict(),
                 'best_loss': best_loss
             }
-            torch.save(checkpoint,f'Best_val_DETR_Model.pt')
+            torch.save(checkpoint,f'Best_val_CDETR_Model.pt')
             print("Model state saved on epoch: ", (epoch+1))
 
     wandb.finish()
@@ -156,7 +156,7 @@ def main():
         'optimizer_state_dict': optimizer.state_dict(),
         'best_loss': best_loss
     }
-    torch.save(checkpoint,f'Last_DETR_Model.pt')
+    torch.save(checkpoint,f'Last_CDETR_Model.pt')
     print("Model state saved on epoch: ", (epoch+1))
 
 

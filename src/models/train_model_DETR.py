@@ -50,7 +50,7 @@ def main():
 
     #defines
     NumOfClasses = 2 
-    NumOfEpochs = 50
+    NumOfEpochs = 150
     BatchSize = 16
     num_workers = 5
     checkpoint = "facebook/detr-resnet-50"

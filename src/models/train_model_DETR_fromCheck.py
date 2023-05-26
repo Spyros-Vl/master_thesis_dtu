@@ -51,8 +51,8 @@ def main(best_loss):
 
     #defines
     NumOfClasses = 2 
-    NumOfEpochs = 50
-    BatchSize = 32
+    NumOfEpochs = 60
+    BatchSize = 16
     num_workers = 5
     checkpoint = "facebook/detr-resnet-50"
 
