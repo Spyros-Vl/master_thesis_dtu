@@ -31,7 +31,7 @@ update_req:
 	pipreqs . --force
 
 #git pull
-#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
+
 
 #run job file
 run:
@@ -44,4 +44,3 @@ kill:
 test:
 	bsub < test_jobscript.sh
 
-#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
