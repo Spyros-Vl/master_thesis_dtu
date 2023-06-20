@@ -14,6 +14,12 @@ Surprisingly, the initial assumption that the Detection Transformer model might 
 
 These findings provide valuable insights for healthcare practitioners and pave the way for further advancements in fracture detection and medical imaging research. Future research can explore alternative architectures, datasets, and fine-tuning strategies to potentially leverage the strengths of the Detection Transformer model in fracture detection.
 
+Results
+==============================
+![FRCNN PR-Curves](cnn_plot_aug.png)
+
+![DETR PR-Curves](detr_plot_aug.png)
+
 Project Organization
 ------------
 
