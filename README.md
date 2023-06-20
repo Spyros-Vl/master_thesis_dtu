@@ -16,7 +16,26 @@ These findings provide valuable insights for healthcare practitioners and pave t
 
 Results
 ==============================
+| Model                             | Label    | AP@50   | mAP@50    |
+|-----------------------------------|----------|---------|-----------|
+| F-RCNN augmentation               | Text     | 0.9883  | -         |
+| F-RCNN augmentation               | Fracture | 0.8997  | -         |
+| F-RCNN augmentation               | Total    | -       | 0.944     |
+| F-RCNN                            | Text     | 0.9883  | -         |
+| F-RCNN                            | Fracture | 0.8815  | -         |
+| F-RCNN                            | Total    | -       | 0.935     |
+
 ![FRCNN PR-Curves](cnn_plot_aug.png)
+
+| Model                  | Label    | AP@50   | mAP@50  |
+|------------------------|----------|---------|---------|
+| DETR augmentation     | Text     | 9653    | -       |
+| DETR augmentation     | Fracture | 0.7803  | -       |
+| DETR augmentation     | Total    | -       | 0.904   |
+| DETR                 | Text     | 0.9505  | -       |
+| DETR                 | Fracture | 0.7237  | -       |
+| DETR                 | Total    | -       | 0.869   |
+
 
 ![DETR PR-Curves](detr_aug.png)
 
