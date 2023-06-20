@@ -18,7 +18,7 @@ Results
 ==============================
 ![FRCNN PR-Curves](cnn_plot_aug.png)
 
-![DETR PR-Curves](detr_plot_aug.png)
+![DETR PR-Curves](detr_aug.png)
 
 Project Organization
 ------------
